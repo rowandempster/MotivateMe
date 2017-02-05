@@ -88,7 +88,7 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
                 builder.setItems(colors, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        SettingsActivity.this.getSharedPreferences("MotivateMeSP", 0).edit().putInt("quote_category", which);
+                        SettingsActivity.this.getSharedPreferences(Constants.MASTER_SP_KEY, 0).edit().putInt(Constants.QUOTE_CATEGORY_SP_KEY, which);
                     }
                 });
                 builder.show();
@@ -107,7 +107,7 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
                 builder.setItems(colors, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        SettingsActivity.this.getSharedPreferences("MotivateMeSP", 0).edit().putInt("text_position", which);
+                        SettingsActivity.this.getSharedPreferences(Constants.MASTER_SP_KEY, 0).edit().putInt(Constants.TEXT_POSITION_SP_KEY, which);
                     }
                 });
                 builder.show();
@@ -145,7 +145,7 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
         });
     }
 
-    private void setupFontBox(LinearLayout layout, String name, String font, final AlertDialog alertDialog) {
+    private void setupFontBox(LinearLayout layout, String name, final String font, final AlertDialog alertDialog) {
         TextView tv = new TextView(SettingsActivity.this);
         tv.setPadding(0, 50, 0, 50);
         tv.setText(name);
@@ -164,7 +164,7 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
             @Override
             public void onClick(View view) {
                 alertDialog.dismiss();
-                SettingsActivity.this.getSharedPreferences("MotivateMeSP", 0).edit().putString("text_font", "font");
+                SettingsActivity.this.getSharedPreferences(Constants.MASTER_SP_KEY, 0).edit().putString(Constants.TEXT_FONT_SP_KEY, font);
             }
         });
     }
@@ -196,8 +196,8 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
                 .setPositiveButton(getString(android.R.string.ok), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        int hi = numberPicker.getValue();
-                        SettingsActivity.this.getSharedPreferences("MotivateMeSP", 0).edit().putInt("text_size", hi);
+                        int fontSize = numberPicker.getValue();
+                        SettingsActivity.this.getSharedPreferences(Constants.MASTER_SP_KEY, 0).edit().putInt(Constants.TEXT_SIZE_SP_KEY, fontSize);
                     }
                 })
                 .show();
@@ -236,9 +236,8 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
                 //Display an error
                 return;
             }
-            SharedPreferences sp = getSharedPreferences("MotivateMeSP", 0);
-            sp.edit().putString("background_uri", data.getData().toString()).commit();
-            //Now you can do whatever you want with your inpustream, save it as file, upload to a server, decode a bitmap...
+            SharedPreferences sp = getSharedPreferences(Constants.MASTER_SP_KEY, 0);
+            sp.edit().putString(Constants.BACKGROUND_URI_SP_KEY, data.getData().toString()).commit();
         }
     }
 
@@ -253,8 +252,8 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
 
     @Override
     public void onColorSelection(DialogFragment dialogFragment, @ColorInt int selectedColor) {
-        SharedPreferences sp = getSharedPreferences("MotivateMeSP", 0);
-        sp.edit().putInt("text_color", selectedColor);
+        SharedPreferences sp = getSharedPreferences(Constants.MASTER_SP_KEY, 0);
+        sp.edit().putInt(Constants.TEXT_COLOR_SP_KEY, selectedColor);
     }
 
 
@@ -274,7 +273,7 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
 
         @Override
         public void onDurationSet(TimeDurationPicker view, long duration) {
-            SettingsActivity.this.getSharedPreferences("MotivateMeSP", 0).edit().putLong("time_period", duration).commit();
+            SettingsActivity.this.getSharedPreferences(Constants.MASTER_SP_KEY, 0).edit().putLong(Constants.REFRESH_INTERVAL_SP_KEY, duration).commit();
         }
     }
 }
