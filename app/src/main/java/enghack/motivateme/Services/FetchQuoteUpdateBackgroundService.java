@@ -2,8 +2,12 @@ package enghack.motivateme.Services;
 
 import android.app.job.JobParameters;
 import android.app.job.JobService;
+import android.content.SharedPreferences;
+import android.support.v4.content.SharedPreferencesCompat;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import twitter4j.Paging;
 import twitter4j.Status;
@@ -17,12 +21,60 @@ import twitter4j.conf.ConfigurationBuilder;
  */
 
 public class FetchQuoteUpdateBackgroundService extends JobService {
-
     private Twitter twitter;
 
     @Override
     public boolean onStartJob(JobParameters jobParameters) {
 
+
+
+        twitterConnection();
+
+        Thread newThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    String quote;
+                    int searchIndex = 1;
+                    scavenge: while (true) {
+                        List<Status> statuses = twitter.getUserTimeline("Inspire_Us", new Paging(50 * searchIndex, 1));
+                        for (Status tweet : statuses) {
+                            if (worthyQuote(quote = tweet.getText())) {
+                                final String id = Long.toString(tweet.getId());
+                                SharedPreferences sp = getApplicationContext().getSharedPreferences("MotivateMeSP", 0);
+                                Set<String> oldSet = sp.getStringSet("usedTweets", new HashSet<String>());
+                                oldSet.add(id);
+                                sp.edit().putStringSet("usedTweets", oldSet).apply();
+                                break scavenge;
+                            }
+                        }
+                        ++searchIndex;
+                    }
+                    // quote is good here
+                    //sendGoodQuote(quote);
+                } catch (TwitterException e) {
+                    e.printStackTrace();
+                }
+            }
+
+        });
+        newThread.start();
+
+//        Intent intent = new Intent("intent");
+//        // Adding some data
+//        intent.putExtra("message", quote);
+//        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+        return false;
+    }
+
+    private boolean worthyQuote(String text) {
+        if (text.contains("@") || text.contains("RT") || text.contains("http")
+                || text.contains("//"))
+            return false;
+        return true;
+    }
+
+    private void twitterConnection() {
         ConfigurationBuilder cb = new ConfigurationBuilder();
         cb.setDebugEnabled(true)
                 .setOAuthConsumerKey("vaZKWtXdTQCWhPFjiNAaJwuMz")
@@ -31,34 +83,7 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
                 .setOAuthAccessTokenSecret("X4Te52AsnPktMCABDsNyGgevHPxDDZKrylDWdC1YeE7FT");
         TwitterFactory tf = new TwitterFactory(cb.build());
         twitter = tf.getInstance();
-
-
-
-
         // set this with twitter result
-
-        Thread newThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    List<Status> statuses = twitter.getUserTimeline("Inspire_Us", new Paging(1, 1));
-                    for(Status tweet : statuses){
-                        final String quote = tweet.getText();
-                    }
-                } catch (TwitterException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        newThread.start();
-
-
-//
-//        Intent intent = new Intent("intent");
-//        // Adding some data
-//        intent.putExtra("message", quote);
-//        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
-        return false;
     }
 
     @Override
