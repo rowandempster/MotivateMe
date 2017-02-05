@@ -79,7 +79,7 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
                 textHeight = (int) (height*0.1);
                 break;
             case 1:
-                textHeight = (int) (height*0.35);
+                textHeight = (int) (height*0.3);
                 break;
             case 2:
                 textHeight = (int) (height*0.6);
@@ -92,8 +92,6 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
         int textSize = getSharedPreferences(Constants.MASTER_SP_KEY, 0).getInt(Constants.TEXT_SIZE_SP_KEY, 60);
         int textColor = getSharedPreferences(Constants.MASTER_SP_KEY, 0).getInt(Constants.TEXT_COLOR_SP_KEY, Color.BLACK);
         String partialQuote = "";
-
-        ImageView iv = new ImageView(getApplicationContext());
 
         Bitmap background = null;
         try {
@@ -112,8 +110,6 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
         float[] space = new float[1];
         paint.getTextWidths(" ", space);
         int spaceWidth = (int)space[0];
-
-
 
         int currLineNum = 1;
         int left = 0, right = words.length;
@@ -140,21 +136,21 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
 
             Log.d("asdf", "partialQuote = " + partialQuote);
             if (partialQuote == null || partialQuote.equals("")) {
-                return;
+                currLineNum = 1;
+                continue;
             }
             Bitmap text = textAsBitmap(partialQuote, paint);
 
-            iv.setImageBitmap(background);
             background = combineImages(background, text, width, height, textHeight, width/2 - currLineWidth/2);
 
-            try {
-                WallpaperManager wallpaperManager = WallpaperManager.getInstance(this);
-                wallpaperManager.setBitmap(background);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
             textHeight += textSize + 30;
             ++currLineNum;
+        }
+        try {
+            WallpaperManager wallpaperManager = WallpaperManager.getInstance(this);
+            wallpaperManager.setBitmap(background);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
