@@ -16,7 +16,7 @@
         <service android:name=".Services.SchedulingService" />
 
         <activity android:name=".SettingsActivity"
-            android:theme="@android:style/Theme.Light.NoTitleBar.Fullscreen">
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar.FullScreen">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
