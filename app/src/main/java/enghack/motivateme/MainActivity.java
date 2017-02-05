@@ -49,7 +49,13 @@ public class MainActivity extends AppCompatActivity {
                         currTweet++;
                         List<Status> statuses = twitter.getUserTimeline("Inspire_Us", new Paging(currTweet, 1));
                         for(Status tweet : statuses){
-                            Toast.makeText(getApplicationContext(), tweet.getText(), Toast.LENGTH_LONG).show();
+                            final String message = tweet.getText();
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+                                }
+                            });
                         }
                     } catch (TwitterException e) {
                         e.printStackTrace();
