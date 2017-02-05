@@ -1,9 +1,29 @@
 package enghack.motivateme.Services;
 
+import android.app.WallpaperManager;
 import android.app.job.JobParameters;
 import android.app.job.JobService;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.provider.MediaStore;
+import android.view.Display;
+import android.view.WindowManager;
+import android.widget.Gallery;
+import android.widget.ImageView;
 
+
+import java.io.File;
+import java.io.IOException;
+
+import android.net.Uri;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import twitter4j.Paging;
 import twitter4j.Status;
@@ -17,12 +37,153 @@ import twitter4j.conf.ConfigurationBuilder;
  */
 
 public class FetchQuoteUpdateBackgroundService extends JobService {
-
     private Twitter twitter;
 
     @Override
-    public boolean onStartJob(JobParameters jobParameters) {
+    public boolean onStartJob(final JobParameters jobParameters) {
+        twitterConnection();
 
+        Thread newThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    setBackground(findQuote());
+                    jobFinished(jobParameters, false); //success
+                } catch (TwitterException e) {
+                    e.printStackTrace();
+                    jobFinished(jobParameters, true); //failure
+                }
+            }
+
+        });
+        newThread.start();
+        return false;
+    }
+
+    private void setBackground(String quote) {
+        String[] words = quote.split("\\s+");
+        final int widthBuffer = 60;
+        int width, height, textHeight = 450;
+        int textSize = 60, textColor = Color.BLACK;
+        String partialQuote = "";
+
+        ImageView iv = new ImageView(getApplicationContext());
+
+        Bitmap background = null;
+        try {
+            background = MediaStore.Images.Media.getBitmap(this.getContentResolver(), Uri.parse("content://media/external/images/media/22277"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        paint.setTextSize(textSize);
+        paint.setColor(textColor);
+        paint.setTextAlign(Paint.Align.LEFT);
+
+        float[] space = new float[1];
+        paint.getTextWidths(" ", space);
+        int spaceWidth = (int)space[0];
+
+        WindowManager window = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
+        Display display = window.getDefaultDisplay();
+        width = display.getWidth();
+        height = display.getHeight();
+
+        int currLineNum = 1;
+        int left = 0, right = words.length;
+        while (left < right) {
+            int currLineWidth = 0, wordsOnLine = 0;
+            partialQuote = "";
+            for (int i = left; i < right; ++i) {
+                int currWordWidth = 0;
+                float[] widths = new float[words[i].length()];
+                paint.getTextWidths(words[i], widths);
+                for (int k = 0; k < widths.length; ++k) {
+                    currLineWidth += widths[k];
+                    currWordWidth += widths[k];
+                }
+                if (currLineWidth >= width - widthBuffer *(currLineNum*2)) {
+                    currLineWidth -= currWordWidth;
+                    break;
+                }
+                currLineWidth += spaceWidth;
+                partialQuote += words[i] + " ";
+                ++wordsOnLine;
+            }
+            left = left + wordsOnLine;
+
+            Bitmap text = textAsBitmap(partialQuote, paint);
+
+            iv.setImageBitmap(background);
+            background = combineImages(background, text, width, height, textHeight, width/2 - currLineWidth/2);
+
+            try {
+                getApplicationContext().setWallpaper(background);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            textHeight += textSize + 30;
+            ++currLineNum;
+        }
+    }
+
+    public Bitmap combineImages(Bitmap background, Bitmap foreground, int width, int height, int vertStart, int horizStart) {
+        Bitmap cs;
+
+        cs = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        Canvas comboImage = new Canvas(cs);
+        background = Bitmap.createScaledBitmap(background, width, height, true);
+        comboImage.drawBitmap(background, 0, 0, null);
+        comboImage.drawBitmap(foreground, horizStart, vertStart, null);
+
+        return cs;
+    }
+
+    private Bitmap textAsBitmap(String text, Paint paint) {
+        float baseline = -paint.ascent(); // ascent() is negative
+        int width = (int) (paint.measureText(text) + 0.5f); // round
+        int height = (int) (baseline + paint.descent() + 0.5f);
+        Bitmap image = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(image);
+        canvas.drawText(text, 0, baseline, paint);
+        return image;
+    }
+    private String findQuote() throws TwitterException {
+        String quote;
+        int searchIndex = 1;
+        scavenge: while (true) {
+            List<Status> statuses = twitter.getUserTimeline("Inspire_Us", new Paging(searchIndex, 20));
+            for (Status tweet : statuses) {
+                String tweetID = Long.toString(tweet.getId());
+                if (worthyQuote(quote = tweet.getText(), tweetID)) {
+                    addIDtoUsedTweets(tweetID);
+                    break scavenge;
+                }
+            }
+            ++searchIndex;
+        }
+        return quote;
+    }
+
+    private void addIDtoUsedTweets(String id) {
+        SharedPreferences sp = getApplicationContext().getSharedPreferences("MotivateMeSP", 0);
+        Set<String> oldSet = sp.getStringSet("usedTweets", new HashSet<String>());
+        oldSet.add(id);
+        sp.edit().putStringSet("usedTweets", oldSet).apply();
+    }
+
+    private boolean worthyQuote(String text, String id) {
+        SharedPreferences sp = getApplicationContext().getSharedPreferences("MotivateMeSP", 0);
+        Set<String> usedTweets = sp.getStringSet("usedTweets", new HashSet<String>());
+        if (text.length() > 115 || text.length() < 15 ||
+                usedTweets.contains(id) ||
+                (text.contains("@") || text.contains("RT") || text.contains("http") || text.contains("//")))
+            return false;
+        return true;
+    }
+
+    private void twitterConnection() {
         ConfigurationBuilder cb = new ConfigurationBuilder();
         cb.setDebugEnabled(true)
                 .setOAuthConsumerKey("vaZKWtXdTQCWhPFjiNAaJwuMz")
@@ -31,34 +192,7 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
                 .setOAuthAccessTokenSecret("X4Te52AsnPktMCABDsNyGgevHPxDDZKrylDWdC1YeE7FT");
         TwitterFactory tf = new TwitterFactory(cb.build());
         twitter = tf.getInstance();
-
-
-
-
         // set this with twitter result
-
-        Thread newThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    List<Status> statuses = twitter.getUserTimeline("Inspire_Us", new Paging(1, 1));
-                    for(Status tweet : statuses){
-                        final String quote = tweet.getText();
-                    }
-                } catch (TwitterException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        newThread.start();
-
-
-//
-//        Intent intent = new Intent("intent");
-//        // Adding some data
-//        intent.putExtra("message", quote);
-//        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
-        return false;
     }
 
     @Override

@@ -23,6 +23,7 @@ import java.util.ArrayList;
 
 import biz.kasual.materialnumberpicker.MaterialNumberPicker;
 import enghack.motivateme.CustomViews.SettingOptionCustomView;
+import enghack.motivateme.Services.SchedulingService;
 import mobi.upod.timedurationpicker.TimeDurationPicker;
 import mobi.upod.timedurationpicker.TimeDurationPickerDialogFragment;
 
@@ -36,6 +37,7 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
     SettingOptionCustomView _fontSetting;
     SettingOptionCustomView _categorySetting;
     ArrayList<SettingOptionCustomView> _optionsList = new ArrayList();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +67,10 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
         }
 
         setupClicks();
+
+        Intent serviceIntent = new Intent(this, SchedulingService.class);
+
+        startService(serviceIntent);
     }
 
     private void setupClicks() {
