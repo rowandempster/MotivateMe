@@ -1,13 +1,18 @@
 package enghack.motivateme;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.os.Build;
 import android.support.annotation.ColorInt;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -16,6 +21,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.enrico.colorpicker.colorDialog;
 
@@ -23,6 +29,7 @@ import java.util.ArrayList;
 
 import biz.kasual.materialnumberpicker.MaterialNumberPicker;
 import enghack.motivateme.CustomViews.SettingOptionCustomView;
+import enghack.motivateme.Services.FetchQuoteUpdateBackgroundService;
 import enghack.motivateme.Services.SchedulingService;
 import mobi.upod.timedurationpicker.TimeDurationPicker;
 import mobi.upod.timedurationpicker.TimeDurationPickerDialogFragment;
@@ -68,9 +75,12 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
 
         setupClicks();
 
-        Intent serviceIntent = new Intent(this, SchedulingService.class);
-
-        startService(serviceIntent);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
+                && ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                    33);
+            return;
+        }
     }
 
     private void setupClicks() {
@@ -94,7 +104,7 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
                 builder.setItems(colors, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        SettingsActivity.this.getSharedPreferences(Constants.MASTER_SP_KEY, 0).edit().putInt(Constants.QUOTE_CATEGORY_SP_KEY, which);
+                        SettingsActivity.this.getSharedPreferences(Constants.MASTER_SP_KEY, 0).edit().putInt(Constants.QUOTE_CATEGORY_SP_KEY, which).commit();
                     }
                 });
                 builder.show();
@@ -113,7 +123,7 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
                 builder.setItems(colors, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        SettingsActivity.this.getSharedPreferences(Constants.MASTER_SP_KEY, 0).edit().putInt(Constants.TEXT_POSITION_SP_KEY, which);
+                        SettingsActivity.this.getSharedPreferences(Constants.MASTER_SP_KEY, 0).edit().putInt(Constants.TEXT_POSITION_SP_KEY, which).commit();
                     }
                 });
                 builder.show();
@@ -170,7 +180,7 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
             @Override
             public void onClick(View view) {
                 alertDialog.dismiss();
-                SettingsActivity.this.getSharedPreferences(Constants.MASTER_SP_KEY, 0).edit().putString(Constants.TEXT_FONT_SP_KEY, font);
+                SettingsActivity.this.getSharedPreferences(Constants.MASTER_SP_KEY, 0).edit().putString(Constants.TEXT_FONT_SP_KEY, font).commit();
             }
         });
     }
@@ -186,8 +196,8 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
 
     public void showNumberPicker() {
         final MaterialNumberPicker numberPicker = new MaterialNumberPicker.Builder(this)
-                .minValue(12)
-                .maxValue(100)
+                .minValue(50)
+                .maxValue(150)
                 .defaultValue(18)
                 .backgroundColor(Color.WHITE)
                 .separatorColor(Color.TRANSPARENT)
@@ -203,7 +213,7 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         int fontSize = numberPicker.getValue();
-                        SettingsActivity.this.getSharedPreferences(Constants.MASTER_SP_KEY, 0).edit().putInt(Constants.TEXT_SIZE_SP_KEY, fontSize);
+                        SettingsActivity.this.getSharedPreferences(Constants.MASTER_SP_KEY, 0).edit().putInt(Constants.TEXT_SIZE_SP_KEY, fontSize).commit();
                     }
                 })
                 .show();
@@ -244,6 +254,9 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
             }
             SharedPreferences sp = getSharedPreferences(Constants.MASTER_SP_KEY, 0);
             sp.edit().putString(Constants.BACKGROUND_URI_SP_KEY, data.getData().toString()).commit();
+            Intent serviceIntent = new Intent(this, SchedulingService.class);
+            startService(serviceIntent);
+
         }
     }
 
@@ -259,7 +272,7 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
     @Override
     public void onColorSelection(DialogFragment dialogFragment, @ColorInt int selectedColor) {
         SharedPreferences sp = getSharedPreferences(Constants.MASTER_SP_KEY, 0);
-        sp.edit().putInt(Constants.TEXT_COLOR_SP_KEY, selectedColor);
+        sp.edit().putInt(Constants.TEXT_COLOR_SP_KEY, selectedColor).commit();
     }
 
 
@@ -267,19 +280,29 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
 
         @Override
         protected long getInitialDuration() {
-            return 15 * 60 * 1000;
+            return 24 * 60 * 60 * 1000;
         }
 
 
         @Override
         protected int setTimeUnits() {
-            return TimeDurationPicker.HH_MM;
+            return TimeDurationPicker.HH_MM_SS;
         }
 
 
         @Override
         public void onDurationSet(TimeDurationPicker view, long duration) {
-            SettingsActivity.this.getSharedPreferences(Constants.MASTER_SP_KEY, 0).edit().putLong(Constants.REFRESH_INTERVAL_SP_KEY, duration).commit();
+            if(duration > 5000) {
+                SettingsActivity.this.getSharedPreferences(Constants.MASTER_SP_KEY, 0).edit().putLong(Constants.REFRESH_INTERVAL_SP_KEY, duration).commit();
+                if (!(SettingsActivity.this.getSharedPreferences(Constants.MASTER_SP_KEY, 0).getString(Constants.BACKGROUND_URI_SP_KEY, "bad").equals("bad"))) {
+                    SettingsActivity.this.stopService(new Intent(SettingsActivity.this, FetchQuoteUpdateBackgroundService.class));
+                    Intent serviceIntent = new Intent(SettingsActivity.this, SchedulingService.class);
+                    SettingsActivity.this.startService(serviceIntent);
+                }
+            }
+            else{
+                Toast.makeText(SettingsActivity.this, "Please enter more than 5 seconds", Toast.LENGTH_LONG).show();
+            }
         }
     }
 }

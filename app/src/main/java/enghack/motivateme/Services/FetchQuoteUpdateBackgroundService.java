@@ -10,7 +10,10 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Rect;
+import android.graphics.Typeface;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.Display;
 import android.view.WindowManager;
 import android.widget.Gallery;
@@ -25,6 +28,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import enghack.motivateme.Constants;
+import enghack.motivateme.R;
 import twitter4j.Paging;
 import twitter4j.Status;
 import twitter4j.Twitter;
@@ -51,7 +56,7 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
                     jobFinished(jobParameters, false); //success
                 } catch (TwitterException e) {
                     e.printStackTrace();
-                    jobFinished(jobParameters, true); //failure
+                    jobFinished(jobParameters, false); //failure
                 }
             }
 
@@ -63,15 +68,37 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
     private void setBackground(String quote) {
         String[] words = quote.split("\\s+");
         final int widthBuffer = 60;
-        int width, height, textHeight = 450;
-        int textSize = 60, textColor = Color.BLACK;
+        int width, height, textHeight;
+        WindowManager window = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
+        Display display = window.getDefaultDisplay();
+        width = display.getWidth();
+        height = display.getHeight();
+
+        switch (getSharedPreferences(Constants.MASTER_SP_KEY, 0).getInt(Constants.TEXT_POSITION_SP_KEY, 1)){
+            case 0:
+                textHeight = (int) (height*0.1);
+                break;
+            case 1:
+                textHeight = (int) (height*0.35);
+                break;
+            case 2:
+                textHeight = (int) (height*0.6);
+                break;
+            default:
+                textHeight = (int) (height*0.5);
+                break;
+
+        }
+        int textSize = getSharedPreferences(Constants.MASTER_SP_KEY, 0).getInt(Constants.TEXT_SIZE_SP_KEY, 60);
+        int textColor = getSharedPreferences(Constants.MASTER_SP_KEY, 0).getInt(Constants.TEXT_COLOR_SP_KEY, Color.BLACK);
         String partialQuote = "";
 
         ImageView iv = new ImageView(getApplicationContext());
 
         Bitmap background = null;
         try {
-            background = MediaStore.Images.Media.getBitmap(this.getContentResolver(), Uri.parse("content://media/external/images/media/22277"));
+            Log.d("asdf", "uri is " + getSharedPreferences(Constants.MASTER_SP_KEY, 0).getString(Constants.BACKGROUND_URI_SP_KEY, ""));
+            background = MediaStore.Images.Media.getBitmap(this.getContentResolver(), Uri.parse(getSharedPreferences(Constants.MASTER_SP_KEY, 0).getString(Constants.BACKGROUND_URI_SP_KEY, "")));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -79,16 +106,14 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         paint.setTextSize(textSize);
         paint.setColor(textColor);
+        paint.setTypeface(Typeface.createFromAsset(getApplicationContext().getAssets(), getSharedPreferences(Constants.MASTER_SP_KEY, 0).getString(Constants.TEXT_FONT_SP_KEY, "fonts/serif.ttf")));
         paint.setTextAlign(Paint.Align.LEFT);
 
         float[] space = new float[1];
         paint.getTextWidths(" ", space);
         int spaceWidth = (int)space[0];
 
-        WindowManager window = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
-        Display display = window.getDefaultDisplay();
-        width = display.getWidth();
-        height = display.getHeight();
+
 
         int currLineNum = 1;
         int left = 0, right = words.length;
@@ -113,13 +138,18 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
             }
             left = left + wordsOnLine;
 
+            Log.d("asdf", "partialQuote = " + partialQuote);
+            if (partialQuote == null || partialQuote.equals("")) {
+                return;
+            }
             Bitmap text = textAsBitmap(partialQuote, paint);
 
             iv.setImageBitmap(background);
             background = combineImages(background, text, width, height, textHeight, width/2 - currLineWidth/2);
 
             try {
-                getApplicationContext().setWallpaper(background);
+                WallpaperManager wallpaperManager = WallpaperManager.getInstance(this);
+                wallpaperManager.setBitmap(background);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -153,7 +183,9 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
         String quote;
         int searchIndex = 1;
         scavenge: while (true) {
-            List<Status> statuses = twitter.getUserTimeline("Inspire_Us", new Paging(searchIndex, 20));
+            List<Status> statuses = twitter.getUserTimeline(Constants.QUOTE_CATEGORY_TWITTER_ACCOUNT_MAP.
+                    get(getSharedPreferences(Constants.MASTER_SP_KEY, 0).getInt(Constants.QUOTE_CATEGORY_SP_KEY, 0)),
+                    new Paging(searchIndex, 20));
             for (Status tweet : statuses) {
                 String tweetID = Long.toString(tweet.getId());
                 if (worthyQuote(quote = tweet.getText(), tweetID)) {
@@ -197,6 +229,6 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
 
     @Override
     public boolean onStopJob(JobParameters jobParameters) {
-        return true;
+        return false;
     }
 }
