@@ -75,13 +75,18 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
         height = display.getHeight();
         int textHeight = (int) (height*0.1);
 
+        if(width>height){
+            int temp = height;
+            height = width;
+            width = temp;
+        }
+
         int textSize = getSharedPreferences(Constants.MASTER_SP_KEY, 0).getInt(Constants.TEXT_SIZE_SP_KEY, 60);
         int textColor = getSharedPreferences(Constants.MASTER_SP_KEY, 0).getInt(Constants.TEXT_COLOR_SP_KEY, Color.BLACK);
         String partialQuote = "";
 
         Bitmap background = null;
         try {
-            Log.d("asdf", "uri is " + getSharedPreferences(Constants.MASTER_SP_KEY, 0).getString(Constants.BACKGROUND_URI_SP_KEY, ""));
             background = MediaStore.Images.Media.getBitmap(this.getContentResolver(), Uri.parse(getSharedPreferences(Constants.MASTER_SP_KEY, 0).getString(Constants.BACKGROUND_URI_SP_KEY, "")));
         } catch (IOException e) {
             e.printStackTrace();
@@ -120,7 +125,6 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
             }
             left = left + wordsOnLine;
 
-            Log.d("asdf", "partialQuote = " + partialQuote);
             if (partialQuote == null || partialQuote.equals("")) {
                 currLineNum = 1;
                 continue;
@@ -133,9 +137,14 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
             ++currLineNum;
         }
         try {
-            WallpaperManager wallpaperManager = WallpaperManager.getInstance(this);
-            wallpaperManager.setBitmap(background);
+            if(background != null) {
+                Log.d("asdf", "setting wallpaper");
+                WallpaperManager wallpaperManager = WallpaperManager.getInstance(this);
+                wallpaperManager.forgetLoadedWallpaper();
+                wallpaperManager.setBitmap(background);
+            }
         } catch (IOException e) {
+            Log.d("asdf", "ERROR SETTING WALLPAPER: " + e.getMessage());
             e.printStackTrace();
         }
     }
