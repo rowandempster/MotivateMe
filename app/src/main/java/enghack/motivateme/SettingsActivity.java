@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.support.annotation.ColorInt;
@@ -40,11 +41,10 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
     SettingOptionCustomView _backgroundImageSetting;
     SettingOptionCustomView _timingSetting;
     SettingOptionCustomView _textSizeSetting;
-    SettingOptionCustomView _textLocationSetting;
     SettingOptionCustomView _fontSetting;
     SettingOptionCustomView _categorySetting;
     ArrayList<SettingOptionCustomView> _optionsList = new ArrayList();
-
+    
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,14 +55,12 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
         _backgroundImageSetting = new SettingOptionCustomView(getApplicationContext(), "Choose your background", R.drawable.background_image);
         _timingSetting = new SettingOptionCustomView(getApplicationContext(), "Choose your quote refresh interval", R.drawable.timing);
         _textSizeSetting = new SettingOptionCustomView(getApplicationContext(), "Choose your text size", R.drawable.textsize);
-        _textLocationSetting = new SettingOptionCustomView(getApplicationContext(), "Choose your text location", R.drawable.textplacement);
         _fontSetting = new SettingOptionCustomView(getApplicationContext(), "Choose your font", R.drawable.fontchoice);
         _categorySetting = new SettingOptionCustomView(getApplicationContext(), "Choose your quote category", R.drawable.categoryicon);
         _optionsList.add(_textColourSetting);
         _optionsList.add(_backgroundImageSetting);
         _optionsList.add(_timingSetting);
         _optionsList.add(_textSizeSetting);
-        _optionsList.add(_textLocationSetting);
         _optionsList.add(_fontSetting);
         _optionsList.add(_categorySetting);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, 0, 1.0f);
@@ -88,7 +86,6 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
         setupBackgroundClick();
         setupTimingClick();
         setupTextSizeClick();
-        setupTextLocationClick();
         setupFontClick();
         setupCatClick();
     }
@@ -105,25 +102,6 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         SettingsActivity.this.getSharedPreferences(Constants.MASTER_SP_KEY, 0).edit().putInt(Constants.QUOTE_CATEGORY_SP_KEY, which).commit();
-                    }
-                });
-                builder.show();
-            }
-        });
-    }
-
-    private void setupTextLocationClick() {
-        _textLocationSetting.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                CharSequence colors[] = new CharSequence[]{"Top", "Middle", "Bottom"};
-
-                AlertDialog.Builder builder = new AlertDialog.Builder(SettingsActivity.this);
-                builder.setTitle("Pick a Quote Position");
-                builder.setItems(colors, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        SettingsActivity.this.getSharedPreferences(Constants.MASTER_SP_KEY, 0).edit().putInt(Constants.TEXT_POSITION_SP_KEY, which).commit();
                     }
                 });
                 builder.show();
