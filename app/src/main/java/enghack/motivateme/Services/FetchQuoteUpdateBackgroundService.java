@@ -62,26 +62,19 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
     private void setBackground(String quote) {
         String[] words = quote.split("\\s+");
         int width, height, textHeight;
-        WindowManager window = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
+        
+	WindowManager window = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
         Display display = window.getDefaultDisplay();
         width = display.getWidth();
         height = display.getHeight();
+        int textHeight = (int) (height*0.1);
 
-        switch (getSharedPreferences(Constants.MASTER_SP_KEY, 0).getInt(Constants.TEXT_POSITION_SP_KEY, 1)){
-            case 0:
-                textHeight = (int) (height*0.1);
-                break;
-            case 1:
-                textHeight = (int) (height*0.3);
-                break;
-            case 2:
-                textHeight = (int) (height*0.6);
-                break;
-            default:
-                textHeight = (int) (height*0.5);
-                break;
-
+        if(width>height){
+            int temp = height;
+            height = width;
+            width = temp;
         }
+
         int textSize = getSharedPreferences(Constants.MASTER_SP_KEY, 0).getInt(Constants.TEXT_SIZE_SP_KEY, 60);
         int textColor = getSharedPreferences(Constants.MASTER_SP_KEY, 0).getInt(Constants.TEXT_COLOR_SP_KEY, Color.BLACK);
         String partialQuote = "";
@@ -126,7 +119,11 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
             }
             left = left + wordsOnLine;
 
+<<<<<<< HEAD
             if (partialQuote.equals("")) {
+=======
+            if (partialQuote == null || partialQuote.equals("")) {
+>>>>>>> 14e00d6a22cbae8a4b9866acd5ac7c0afa4f2ccc
                 currLineNum = 1;
                 continue;
             }
@@ -138,9 +135,14 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
             ++currLineNum;
         }
         try {
-            WallpaperManager wallpaperManager = WallpaperManager.getInstance(this);
-            wallpaperManager.setBitmap(background);
+            if(background != null) {
+                Log.d("asdf", "setting wallpaper");
+                WallpaperManager wallpaperManager = WallpaperManager.getInstance(this);
+                wallpaperManager.forgetLoadedWallpaper();
+                wallpaperManager.setBitmap(background);
+            }
         } catch (IOException e) {
+            Log.d("asdf", "ERROR SETTING WALLPAPER: " + e.getMessage());
             e.printStackTrace();
         }
     }
