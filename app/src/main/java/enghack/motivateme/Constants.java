@@ -11,7 +11,6 @@ public class Constants {
     //********SHARED PREFS KEYS
     public static final String MASTER_SP_KEY = "MotivateMeSP";
 
-    public static final String TEXT_POSITION_SP_KEY = "text_position";
     public static final String QUOTE_CATEGORY_SP_KEY = "quote_category";
     public static final String TEXT_FONT_SP_KEY = "text_font";
     public static final String TEXT_SIZE_SP_KEY = "text_size";
