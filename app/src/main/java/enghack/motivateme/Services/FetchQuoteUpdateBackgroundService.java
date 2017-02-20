@@ -6,21 +6,15 @@ import android.app.job.JobService;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.provider.MediaStore;
-import android.util.Log;
 import android.view.Display;
 import android.view.WindowManager;
-import android.widget.Gallery;
-import android.widget.ImageView;
 
 
-import java.io.File;
 import java.io.IOException;
 
 import android.net.Uri;
@@ -29,13 +23,13 @@ import java.util.List;
 import java.util.Set;
 
 import enghack.motivateme.Constants;
-import enghack.motivateme.R;
 import twitter4j.Paging;
 import twitter4j.Status;
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
 import twitter4j.TwitterFactory;
 import twitter4j.conf.ConfigurationBuilder;
+
 
 /**
  * Created by itwasarainyday on 04/02/17.
@@ -67,7 +61,6 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
 
     private void setBackground(String quote) {
         String[] words = quote.split("\\s+");
-        final int widthBuffer = 60;
         int width, height, textHeight;
         WindowManager window = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
         Display display = window.getDefaultDisplay();
@@ -95,7 +88,6 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
 
         Bitmap background = null;
         try {
-            Log.d("asdf", "uri is " + getSharedPreferences(Constants.MASTER_SP_KEY, 0).getString(Constants.BACKGROUND_URI_SP_KEY, ""));
             background = MediaStore.Images.Media.getBitmap(this.getContentResolver(), Uri.parse(getSharedPreferences(Constants.MASTER_SP_KEY, 0).getString(Constants.BACKGROUND_URI_SP_KEY, "")));
         } catch (IOException e) {
             e.printStackTrace();
@@ -124,7 +116,7 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
                     currLineWidth += widths[k];
                     currWordWidth += widths[k];
                 }
-                if (currLineWidth >= width - widthBuffer *(currLineNum*2)) {
+                if (currLineWidth >= width - Constants.WIDTH_BUFFER *(currLineNum*2)) {
                     currLineWidth -= currWordWidth;
                     break;
                 }
@@ -134,8 +126,7 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
             }
             left = left + wordsOnLine;
 
-            Log.d("asdf", "partialQuote = " + partialQuote);
-            if (partialQuote == null || partialQuote.equals("")) {
+            if (partialQuote.equals("")) {
                 currLineNum = 1;
                 continue;
             }
@@ -143,7 +134,7 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
 
             background = combineImages(background, text, width, height, textHeight, width/2 - currLineWidth/2);
 
-            textHeight += textSize + 30;
+            textHeight += textSize + Constants.NEWLINE_BUFFER;
             ++currLineNum;
         }
         try {
