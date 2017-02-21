@@ -6,6 +6,7 @@ import android.graphics.Typeface;
 import android.util.Log;
 
 import enghack.motivateme.Constants;
+import enghack.motivateme.Database.UserPreferencesTable.UserPreferencesManager;
 
 /**
  * Created by itwasarainyday on 20/02/17.
@@ -27,7 +28,7 @@ public class UserFontSize {
         float[] space = new float[1];
 
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        paint.setTypeface(Typeface.createFromAsset(context.getAssets(), context.getSharedPreferences(Constants.MASTER_SP_KEY, 0).getString(Constants.TEXT_FONT_SP_KEY, "fonts/serif.ttf")));
+        paint.setTypeface(Typeface.createFromAsset(context.getAssets(), UserPreferencesManager.readTextFont()));
 
         while(true) {
             wideLetter=0;
