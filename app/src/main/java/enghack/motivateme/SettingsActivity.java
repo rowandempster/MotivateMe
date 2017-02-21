@@ -17,6 +17,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,6 +33,7 @@ import biz.kasual.materialnumberpicker.MaterialNumberPicker;
 import enghack.motivateme.CustomViews.SettingOptionCustomView;
 import enghack.motivateme.Services.FetchQuoteUpdateBackgroundService;
 import enghack.motivateme.Services.SchedulingService;
+import enghack.motivateme.Util.UserFontSize;
 import mobi.upod.timedurationpicker.TimeDurationPicker;
 import mobi.upod.timedurationpicker.TimeDurationPickerDialogFragment;
 
@@ -158,7 +160,21 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
             @Override
             public void onClick(View view) {
                 alertDialog.dismiss();
+
+                DisplayMetrics dm = new DisplayMetrics();
+                SettingsActivity.this.getWindowManager().getDefaultDisplay().getMetrics(dm);
+
+                final int oldMaxFontSize = UserFontSize.getMaxFontSize(dm.widthPixels,
+                        dm.heightPixels, SettingsActivity.this.getApplicationContext());
+
+
                 SettingsActivity.this.getSharedPreferences(Constants.MASTER_SP_KEY, 0).edit().putString(Constants.TEXT_FONT_SP_KEY, font).commit();
+                final int maxFontSize = UserFontSize.getMaxFontSize(dm.widthPixels,
+                        dm.heightPixels, SettingsActivity.this.getApplicationContext());
+                if (oldMaxFontSize > maxFontSize) {
+                    SettingsActivity.this.getSharedPreferences(Constants.MASTER_SP_KEY, 0).edit().putInt(Constants.TEXT_SIZE_SP_KEY, maxFontSize).commit();
+                }
+
             }
         });
     }
@@ -173,9 +189,15 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
     }
 
     public void showNumberPicker() {
+        DisplayMetrics dm = new DisplayMetrics();
+        this.getWindowManager().getDefaultDisplay().getMetrics(dm);
+
+        final int maxFontSize = UserFontSize.getMaxFontSize(dm.widthPixels,
+                dm.heightPixels, this.getApplicationContext());
+
         final MaterialNumberPicker numberPicker = new MaterialNumberPicker.Builder(this)
                 .minValue(50)
-                .maxValue(150)
+                .maxValue(maxFontSize)
                 .defaultValue(18)
                 .backgroundColor(Color.WHITE)
                 .separatorColor(Color.TRANSPARENT)

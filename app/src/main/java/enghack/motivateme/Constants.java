@@ -29,6 +29,10 @@ public class Constants {
         put(5, "philosophytweet");
     }};
 
+    //********ARITHMETIC
+    public static final int WIDTH_BUFFER = 60;
+    public static final int NEWLINE_BUFFER = 30;
+    public static final int TWEET_LENGTH = 140;
 
 
 }
