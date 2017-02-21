@@ -3,6 +3,7 @@ package enghack.motivateme.Util;
 import android.content.Context;
 import android.graphics.Paint;
 import android.graphics.Typeface;
+import android.util.Log;
 
 import enghack.motivateme.Constants;
 
@@ -12,7 +13,7 @@ import enghack.motivateme.Constants;
 
 public class UserFontSize {
 
-    private static String[] alphabet = {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"};
+    private static String[] alphabet = {"a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","x","w","y","z"};
 
     public static int getMaxFontSize(int width, int height, Context context) {
         int temp, wideLetter = 0;
@@ -29,16 +30,18 @@ public class UserFontSize {
         paint.setTypeface(Typeface.createFromAsset(context.getAssets(), context.getSharedPreferences(Constants.MASTER_SP_KEY, 0).getString(Constants.TEXT_FONT_SP_KEY, "fonts/serif.ttf")));
 
         while(true) {
-
+            wideLetter=0;
             paint.setTextSize(maxSize);
 
             for (int i = 0; i < 26; ++i) {
                 paint.getTextWidths(alphabet[i], space);
-                if ((int) space[0] > wideLetter) wideLetter = (int)space[0];
+                wideLetter += (int)space[0];
+                Log.d(alphabet[i], Integer.toString((int)space[0]));
             }
+            wideLetter = wideLetter / 26 + 1;
 
-            int numberOfLines = height / (maxSize + Constants.NEWLINE_BUFFER);
-            int charsPerLine = (width - Constants.WIDTH_BUFFER) / wideLetter;
+            int numberOfLines = (int)(height*0.70/ (maxSize + Constants.NEWLINE_BUFFER)); // height*0.70 is usable space on screen
+            int charsPerLine = (int)((width*0.80 - Constants.WIDTH_BUFFER) / wideLetter);
 
             if (charsPerLine * numberOfLines < Constants.TWEET_LENGTH) {
                 maxSize -= 1;

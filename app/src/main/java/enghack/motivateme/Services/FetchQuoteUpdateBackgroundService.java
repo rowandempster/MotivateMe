@@ -47,6 +47,7 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
             public void run() {
                 try {
                     setBackground(findQuote());
+                    // "Anger is an acid that can do more harm to the vessel in which it is stored than to anything on which it is poured filling words. -Mark Twain"
                     jobFinished(jobParameters, false); //success
                 } catch (TwitterException e) {
                     e.printStackTrace();
@@ -61,13 +62,12 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
 
     private void setBackground(String quote) {
         String[] words = quote.split("\\s+");
-        int width, height, textHeight;
-        
-	WindowManager window = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
+        int width, height;
+
+        WindowManager window = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
         Display display = window.getDefaultDisplay();
         width = display.getWidth();
         height = display.getHeight();
-        int textHeight = (int) (height*0.1);
 
         if(width>height){
             int temp = height;
@@ -77,6 +77,11 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
 
         int textSize = getSharedPreferences(Constants.MASTER_SP_KEY, 0).getInt(Constants.TEXT_SIZE_SP_KEY, 60);
         int textColor = getSharedPreferences(Constants.MASTER_SP_KEY, 0).getInt(Constants.TEXT_COLOR_SP_KEY, Color.BLACK);
+        int textHeight = (int) (height * 0.05);
+                //((height*0.80 - ((words.length / 2) * (textSize + Constants.NEWLINE_BUFFER))) / 2);
+                //(int) (height / (height*0.70 / (textSize + Constants.NEWLINE_BUFFER))); // height*0.70 is usable space on screen
+                /*(int) (height / (0.4 * words.length))*/;
+
         String partialQuote = "";
 
         Bitmap background = null;
@@ -100,6 +105,8 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
         int left = 0, right = words.length;
         while (left < right) {
             int currLineWidth = 0, wordsOnLine = 0;
+            if (currLineNum >= 5) currLineNum = 1;
+
             partialQuote = "";
             for (int i = left; i < right; ++i) {
                 int currWordWidth = 0;
@@ -109,7 +116,7 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
                     currLineWidth += widths[k];
                     currWordWidth += widths[k];
                 }
-                if (currLineWidth >= width - Constants.WIDTH_BUFFER *(currLineNum*2)) {
+                if (currLineWidth >= width - Constants.WIDTH_BUFFER *2*currLineNum) {
                     currLineWidth -= currWordWidth;
                     break;
                 }
@@ -119,11 +126,7 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
             }
             left = left + wordsOnLine;
 
-<<<<<<< HEAD
-            if (partialQuote.equals("")) {
-=======
-            if (partialQuote == null || partialQuote.equals("")) {
->>>>>>> 14e00d6a22cbae8a4b9866acd5ac7c0afa4f2ccc
+           if (partialQuote.equals("")) {
                 currLineNum = 1;
                 continue;
             }
@@ -136,13 +139,11 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
         }
         try {
             if(background != null) {
-                Log.d("asdf", "setting wallpaper");
                 WallpaperManager wallpaperManager = WallpaperManager.getInstance(this);
                 wallpaperManager.forgetLoadedWallpaper();
                 wallpaperManager.setBitmap(background);
             }
         } catch (IOException e) {
-            Log.d("asdf", "ERROR SETTING WALLPAPER: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -171,10 +172,11 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
     private String findQuote() throws TwitterException {
         String quote;
         int searchIndex = 1;
+
         scavenge: while (true) {
             List<Status> statuses = twitter.getUserTimeline(Constants.QUOTE_CATEGORY_TWITTER_ACCOUNT_MAP.
                     get(getSharedPreferences(Constants.MASTER_SP_KEY, 0).getInt(Constants.QUOTE_CATEGORY_SP_KEY, 0)),
-                    new Paging(searchIndex, 20));
+                    new Paging(searchIndex, 500));
             for (Status tweet : statuses) {
                 String tweetID = Long.toString(tweet.getId());
                 if (worthyQuote(quote = tweet.getText(), tweetID)) {
