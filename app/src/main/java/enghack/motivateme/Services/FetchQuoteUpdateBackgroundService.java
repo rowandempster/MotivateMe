@@ -6,21 +6,15 @@ import android.app.job.JobService;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.provider.MediaStore;
-import android.util.Log;
 import android.view.Display;
 import android.view.WindowManager;
-import android.widget.Gallery;
-import android.widget.ImageView;
 
 
-import java.io.File;
 import java.io.IOException;
 
 import android.net.Uri;
@@ -30,13 +24,13 @@ import java.util.Set;
 
 import enghack.motivateme.Constants;
 import enghack.motivateme.Database.UserPreferencesTable.UserPreferencesManager;
-import enghack.motivateme.R;
 import twitter4j.Paging;
 import twitter4j.Status;
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
 import twitter4j.TwitterFactory;
 import twitter4j.conf.ConfigurationBuilder;
+
 
 /**
  * Created by itwasarainyday on 04/02/17.
@@ -48,7 +42,6 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
     @Override
     public boolean onStartJob(final JobParameters jobParameters) {
         twitterConnection();
-        Log.d("asdf", "FetchQuoteUpdateBackgroundService calling init");
         UserPreferencesManager.init(this);
 
         Thread newThread = new Thread(new Runnable() {
@@ -56,8 +49,8 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
             public void run() {
                 try {
                     setBackground(findQuote());
+                    // "Anger is an acid that can do more harm to the vessel in which it is stored than to anything on which it is poured filling words. -Mark Twain"
                     jobFinished(jobParameters, false); //success
-                    Log.d("asdf", "FetchQuoteUpdateBackgroundService calling destroy");
                     UserPreferencesManager.destroy();
                 } catch (TwitterException e) {
                     e.printStackTrace();
@@ -72,22 +65,26 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
 
     private void setBackground(String quote) {
         String[] words = quote.split("\\s+");
-        final int widthBuffer = 60;
         int width, height;
+
         WindowManager window = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
         Display display = window.getDefaultDisplay();
         width = display.getWidth();
         height = display.getHeight();
-        int textHeight = (int) (height*0.1);
 
         if(width>height){
             int temp = height;
             height = width;
             width = temp;
         }
-        Log.d("asdf", "getting textsize , it's " + UserPreferencesManager.readTextSize());
         int textSize = UserPreferencesManager.readTextSize();
         int textColor = UserPreferencesManager.readTextColour();
+
+        int textHeight = (int) (height * 0.05);
+                //((height*0.80 - ((words.length / 2) * (textSize + Constants.NEWLINE_BUFFER))) / 2);
+                //(int) (height / (height*0.70 / (textSize + Constants.NEWLINE_BUFFER))); // height*0.70 is usable space on screen
+                /*(int) (height / (0.4 * words.length))*/;
+
         String partialQuote = "";
 
         Bitmap background = null;
@@ -111,6 +108,8 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
         int left = 0, right = words.length;
         while (left < right) {
             int currLineWidth = 0, wordsOnLine = 0;
+            if (currLineNum >= 5) currLineNum = 1;
+
             partialQuote = "";
             for (int i = left; i < right; ++i) {
                 int currWordWidth = 0;
@@ -120,7 +119,7 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
                     currLineWidth += widths[k];
                     currWordWidth += widths[k];
                 }
-                if (currLineWidth >= width - widthBuffer *(currLineNum*2)) {
+                if (currLineWidth >= width - Constants.WIDTH_BUFFER *2*currLineNum) {
                     currLineWidth -= currWordWidth;
                     break;
                 }
@@ -130,7 +129,7 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
             }
             left = left + wordsOnLine;
 
-            if (partialQuote == null || partialQuote.equals("")) {
+           if (partialQuote.equals("")) {
                 currLineNum = 1;
                 continue;
             }
@@ -138,18 +137,16 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
 
             background = combineImages(background, text, width, height, textHeight, width/2 - currLineWidth/2);
 
-            textHeight += textSize + 30;
+            textHeight += textSize + Constants.NEWLINE_BUFFER;
             ++currLineNum;
         }
         try {
             if(background != null) {
-                Log.d("asdf", "setting wallpaper");
                 WallpaperManager wallpaperManager = WallpaperManager.getInstance(this);
                 wallpaperManager.forgetLoadedWallpaper();
                 wallpaperManager.setBitmap(background);
             }
         } catch (IOException e) {
-            Log.d("asdf", "ERROR SETTING WALLPAPER: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -178,10 +175,11 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
     private String findQuote() throws TwitterException {
         String quote;
         int searchIndex = 1;
+
         scavenge: while (true) {
             List<Status> statuses = twitter.getUserTimeline(Constants.QUOTE_CATEGORY_TWITTER_ACCOUNT_MAP.
                     get(UserPreferencesManager.readQuoteCategory()),
-                    new Paging(searchIndex, 20));
+                    new Paging(searchIndex, 500));
             for (Status tweet : statuses) {
                 String tweetID = Long.toString(tweet.getId());
                 if (worthyQuote(quote = tweet.getText(), tweetID)) {
