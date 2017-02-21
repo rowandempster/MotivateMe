@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Set;
 
 import enghack.motivateme.Constants;
+import enghack.motivateme.Database.UserPreferencesTable.UserPreferencesManager;
 import twitter4j.Paging;
 import twitter4j.Status;
 import twitter4j.Twitter;
@@ -41,6 +42,7 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
     @Override
     public boolean onStartJob(final JobParameters jobParameters) {
         twitterConnection();
+        UserPreferencesManager.init(this);
 
         Thread newThread = new Thread(new Runnable() {
             @Override
@@ -49,6 +51,7 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
                     setBackground(findQuote());
                     // "Anger is an acid that can do more harm to the vessel in which it is stored than to anything on which it is poured filling words. -Mark Twain"
                     jobFinished(jobParameters, false); //success
+                    UserPreferencesManager.destroy();
                 } catch (TwitterException e) {
                     e.printStackTrace();
                     jobFinished(jobParameters, false); //failure
@@ -74,9 +77,9 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
             height = width;
             width = temp;
         }
+        int textSize = UserPreferencesManager.readTextSize();
+        int textColor = UserPreferencesManager.readTextColour();
 
-        int textSize = getSharedPreferences(Constants.MASTER_SP_KEY, 0).getInt(Constants.TEXT_SIZE_SP_KEY, 60);
-        int textColor = getSharedPreferences(Constants.MASTER_SP_KEY, 0).getInt(Constants.TEXT_COLOR_SP_KEY, Color.BLACK);
         int textHeight = (int) (height * 0.05);
                 //((height*0.80 - ((words.length / 2) * (textSize + Constants.NEWLINE_BUFFER))) / 2);
                 //(int) (height / (height*0.70 / (textSize + Constants.NEWLINE_BUFFER))); // height*0.70 is usable space on screen
@@ -86,7 +89,7 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
 
         Bitmap background = null;
         try {
-            background = MediaStore.Images.Media.getBitmap(this.getContentResolver(), Uri.parse(getSharedPreferences(Constants.MASTER_SP_KEY, 0).getString(Constants.BACKGROUND_URI_SP_KEY, "")));
+            background = MediaStore.Images.Media.getBitmap(this.getContentResolver(), Uri.parse(UserPreferencesManager.readBackgroundUri()));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -94,7 +97,7 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         paint.setTextSize(textSize);
         paint.setColor(textColor);
-        paint.setTypeface(Typeface.createFromAsset(getApplicationContext().getAssets(), getSharedPreferences(Constants.MASTER_SP_KEY, 0).getString(Constants.TEXT_FONT_SP_KEY, "fonts/serif.ttf")));
+        paint.setTypeface(Typeface.createFromAsset(getApplicationContext().getAssets(), UserPreferencesManager.readTextFont()));
         paint.setTextAlign(Paint.Align.LEFT);
 
         float[] space = new float[1];
@@ -175,7 +178,7 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
 
         scavenge: while (true) {
             List<Status> statuses = twitter.getUserTimeline(Constants.QUOTE_CATEGORY_TWITTER_ACCOUNT_MAP.
-                    get(getSharedPreferences(Constants.MASTER_SP_KEY, 0).getInt(Constants.QUOTE_CATEGORY_SP_KEY, 0)),
+                    get(UserPreferencesManager.readQuoteCategory()),
                     new Paging(searchIndex, 500));
             for (Status tweet : statuses) {
                 String tweetID = Long.toString(tweet.getId());

@@ -31,6 +31,7 @@ import java.util.ArrayList;
 
 import biz.kasual.materialnumberpicker.MaterialNumberPicker;
 import enghack.motivateme.CustomViews.SettingOptionCustomView;
+import enghack.motivateme.Database.UserPreferencesTable.UserPreferencesManager;
 import enghack.motivateme.Services.FetchQuoteUpdateBackgroundService;
 import enghack.motivateme.Services.SchedulingService;
 import enghack.motivateme.Util.UserFontSize;
@@ -51,6 +52,9 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        UserPreferencesManager.init(SettingsActivity.this);
+
         setContentView(R.layout.activity_settings);
         _root = (LinearLayout) findViewById(R.id.settings_root);
         _textColourSetting = new SettingOptionCustomView(getApplicationContext(), "Choose your text colour", R.drawable.colour_wheel);
@@ -103,7 +107,7 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
                 builder.setItems(colors, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        SettingsActivity.this.getSharedPreferences(Constants.MASTER_SP_KEY, 0).edit().putInt(Constants.QUOTE_CATEGORY_SP_KEY, which).commit();
+                        UserPreferencesManager.writeQuoteCategory(which);
                     }
                 });
                 builder.show();
@@ -167,12 +171,11 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
                 final int oldMaxFontSize = UserFontSize.getMaxFontSize(dm.widthPixels,
                         dm.heightPixels, SettingsActivity.this.getApplicationContext());
 
-
-                SettingsActivity.this.getSharedPreferences(Constants.MASTER_SP_KEY, 0).edit().putString(Constants.TEXT_FONT_SP_KEY, font).commit();
+                UserPreferencesManager.writeTextFont(font);
                 final int maxFontSize = UserFontSize.getMaxFontSize(dm.widthPixels,
                         dm.heightPixels, SettingsActivity.this.getApplicationContext());
                 if (oldMaxFontSize > maxFontSize) {
-                    SettingsActivity.this.getSharedPreferences(Constants.MASTER_SP_KEY, 0).edit().putInt(Constants.TEXT_SIZE_SP_KEY, maxFontSize).commit();
+                    UserPreferencesManager.writeTextSize(maxFontSize);
                 }
 
             }
@@ -213,7 +216,8 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         int fontSize = numberPicker.getValue();
-                        SettingsActivity.this.getSharedPreferences(Constants.MASTER_SP_KEY, 0).edit().putInt(Constants.TEXT_SIZE_SP_KEY, fontSize).commit();
+                        UserPreferencesManager.writeTextSize(fontSize);
+//                        SettingsActivity.this.getSharedPreferences(Constants.MASTER_SP_KEY, 0).edit().putInt(Constants.TEXT_SIZE_SP_KEY, fontSize).commit();
                     }
                 })
                 .show();
@@ -252,8 +256,7 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
                 //Display an error
                 return;
             }
-            SharedPreferences sp = getSharedPreferences(Constants.MASTER_SP_KEY, 0);
-            sp.edit().putString(Constants.BACKGROUND_URI_SP_KEY, data.getData().toString()).commit();
+            UserPreferencesManager.writeBackgroundUri(data.getData().toString());
             Intent serviceIntent = new Intent(this, SchedulingService.class);
             startService(serviceIntent);
 
@@ -271,8 +274,7 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
 
     @Override
     public void onColorSelection(DialogFragment dialogFragment, @ColorInt int selectedColor) {
-        SharedPreferences sp = getSharedPreferences(Constants.MASTER_SP_KEY, 0);
-        sp.edit().putInt(Constants.TEXT_COLOR_SP_KEY, selectedColor).commit();
+        UserPreferencesManager.writeTextColour(selectedColor);
     }
 
 
@@ -293,8 +295,8 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
         @Override
         public void onDurationSet(TimeDurationPicker view, long duration) {
             if(duration > 5000) {
-                SettingsActivity.this.getSharedPreferences(Constants.MASTER_SP_KEY, 0).edit().putLong(Constants.REFRESH_INTERVAL_SP_KEY, duration).commit();
-                if (!(SettingsActivity.this.getSharedPreferences(Constants.MASTER_SP_KEY, 0).getString(Constants.BACKGROUND_URI_SP_KEY, "bad").equals("bad"))) {
+                UserPreferencesManager.writeRefreshInterval(duration);
+                if (UserPreferencesManager.readBackgroundUri()!=null) {
                     SettingsActivity.this.stopService(new Intent(SettingsActivity.this, FetchQuoteUpdateBackgroundService.class));
                     Intent serviceIntent = new Intent(SettingsActivity.this, SchedulingService.class);
                     SettingsActivity.this.startService(serviceIntent);
@@ -304,5 +306,11 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
                 Toast.makeText(SettingsActivity.this, "Please enter more than 5 seconds", Toast.LENGTH_LONG).show();
             }
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        UserPreferencesManager.destroy();
     }
 }
