@@ -8,12 +8,10 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 
-import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 
-import enghack.motivateme.Constants;
-import enghack.motivateme.Database.UserPreferencesTable.UserPreferencesManager;
+import enghack.motivateme.Database.UserPreferencesTable.UserPreferencesInterface;
 
 
 public class SchedulingService extends Service {
@@ -27,7 +25,7 @@ public class SchedulingService extends Service {
                 new ComponentName(getPackageName(),
                         FetchQuoteUpdateBackgroundService.class.getName()));
 
-        builder.setPeriodic(UserPreferencesManager.readRefreshInterval());
+        builder.setPeriodic(UserPreferencesInterface.readRefreshInterval());
 
         scheduler.schedule(builder.build());
         //builder.setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY);

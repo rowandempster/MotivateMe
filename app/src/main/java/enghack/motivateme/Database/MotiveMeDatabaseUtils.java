@@ -80,27 +80,27 @@ public class MotiveMeDatabaseUtils {
 
     public static int readFirstInt(SQLiteDatabase db, String table, String id, String col) {
         if (db == null) {
-            return -1;
+            return 0;
         }
 
         Cursor cursor = getCursor(db, table, id, col);
         if (cursor.moveToFirst()) {
             return cursor.getInt(cursor.getColumnIndex(col));
         } else {
-            return -1;
+            return 0;
         }
     }
 
     public static long readFirstLong(SQLiteDatabase db, String table, String id, String col){
         if (db == null) {
-            return -1;
+            return 0;
         }
 
         Cursor cursor = getCursor(db, table, id, col);
         if (cursor.moveToFirst()) {
             return cursor.getLong(cursor.getColumnIndex(col));
         } else {
-            return -1;
+            return 0;
         }
     }
 

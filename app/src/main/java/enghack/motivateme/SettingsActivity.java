@@ -4,10 +4,8 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.support.annotation.ColorInt;
@@ -31,7 +29,8 @@ import java.util.ArrayList;
 
 import biz.kasual.materialnumberpicker.MaterialNumberPicker;
 import enghack.motivateme.CustomViews.SettingOptionCustomView;
-import enghack.motivateme.Database.UserPreferencesTable.UserPreferencesManager;
+import enghack.motivateme.Database.MotivateMeDbHelper;
+import enghack.motivateme.Database.UserPreferencesTable.UserPreferencesInterface;
 import enghack.motivateme.Services.FetchQuoteUpdateBackgroundService;
 import enghack.motivateme.Services.SchedulingService;
 import enghack.motivateme.Util.UserFontSize;
@@ -53,7 +52,7 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        UserPreferencesManager.init(SettingsActivity.this);
+        MotivateMeDbHelper.openHelper(this);
 
         setContentView(R.layout.activity_settings);
         _root = (LinearLayout) findViewById(R.id.settings_root);
@@ -107,7 +106,7 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
                 builder.setItems(colors, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        UserPreferencesManager.writeQuoteCategory(which);
+                        UserPreferencesInterface.writeQuoteCategory(which);
                     }
                 });
                 builder.show();
@@ -171,11 +170,11 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
                 final int oldMaxFontSize = UserFontSize.getMaxFontSize(dm.widthPixels,
                         dm.heightPixels, SettingsActivity.this.getApplicationContext());
 
-                UserPreferencesManager.writeTextFont(font);
+                UserPreferencesInterface.writeTextFont(font);
                 final int maxFontSize = UserFontSize.getMaxFontSize(dm.widthPixels,
                         dm.heightPixels, SettingsActivity.this.getApplicationContext());
                 if (oldMaxFontSize > maxFontSize) {
-                    UserPreferencesManager.writeTextSize(maxFontSize);
+                    UserPreferencesInterface.writeTextSize(maxFontSize);
                 }
 
             }
@@ -216,7 +215,7 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         int fontSize = numberPicker.getValue();
-                        UserPreferencesManager.writeTextSize(fontSize);
+                        UserPreferencesInterface.writeTextSize(fontSize);
 //                        SettingsActivity.this.getSharedPreferences(Constants.MASTER_SP_KEY, 0).edit().putInt(Constants.TEXT_SIZE_SP_KEY, fontSize).commit();
                     }
                 })
@@ -256,7 +255,7 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
                 //Display an error
                 return;
             }
-            UserPreferencesManager.writeBackgroundUri(data.getData().toString());
+            UserPreferencesInterface.writeBackgroundUri(data.getData().toString());
             Intent serviceIntent = new Intent(this, SchedulingService.class);
             startService(serviceIntent);
 
@@ -274,7 +273,7 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
 
     @Override
     public void onColorSelection(DialogFragment dialogFragment, @ColorInt int selectedColor) {
-        UserPreferencesManager.writeTextColour(selectedColor);
+        UserPreferencesInterface.writeTextColour(selectedColor);
     }
 
 
@@ -295,8 +294,8 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
         @Override
         public void onDurationSet(TimeDurationPicker view, long duration) {
             if(duration > 5000) {
-                UserPreferencesManager.writeRefreshInterval(duration);
-                if (UserPreferencesManager.readBackgroundUri()!=null) {
+                UserPreferencesInterface.writeRefreshInterval(duration);
+                if (UserPreferencesInterface.readBackgroundUri()!=null) {
                     SettingsActivity.this.stopService(new Intent(SettingsActivity.this, FetchQuoteUpdateBackgroundService.class));
                     Intent serviceIntent = new Intent(SettingsActivity.this, SchedulingService.class);
                     SettingsActivity.this.startService(serviceIntent);
@@ -311,6 +310,6 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        UserPreferencesManager.destroy();
+        MotivateMeDbHelper.closeHelper();
     }
 }
