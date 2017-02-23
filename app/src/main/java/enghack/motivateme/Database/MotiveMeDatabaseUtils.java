@@ -3,10 +3,8 @@ package enghack.motivateme.Database;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.support.annotation.NonNull;
-import android.util.Log;
 
-import enghack.motivateme.Database.UserPreferencesTable.UserPreferencesContract;
+import enghack.motivateme.Database.UsedTweetsTable.UsedTweetsTableContract;
 
 /**
  * Created by rowandempster on 2/20/17.
@@ -150,5 +148,9 @@ public class MotiveMeDatabaseUtils {
         mcursor.moveToFirst();
         int icount = mcursor.getInt(0);
         return icount < 1;
+    }
+
+    public static void deleteRow(SQLiteDatabase db, String table, long rowId){
+        db.delete(table, "_id=?", new String[]{Long.toString(rowId)});
     }
 }

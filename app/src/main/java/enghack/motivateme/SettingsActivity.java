@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import biz.kasual.materialnumberpicker.MaterialNumberPicker;
 import enghack.motivateme.CustomViews.SettingOptionCustomView;
 import enghack.motivateme.Database.MotivateMeDbHelper;
-import enghack.motivateme.Database.UserPreferencesTable.UserPreferencesInterface;
+import enghack.motivateme.Database.UserPreferencesTable.UserPreferencesTableInterface;
 import enghack.motivateme.Services.FetchQuoteUpdateBackgroundService;
 import enghack.motivateme.Services.SchedulingService;
 import enghack.motivateme.Util.UserFontSize;
@@ -106,7 +106,7 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
                 builder.setItems(colors, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        UserPreferencesInterface.writeQuoteCategory(which);
+                        UserPreferencesTableInterface.writeQuoteCategory(which);
                     }
                 });
                 builder.show();
@@ -170,11 +170,11 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
                 final int oldMaxFontSize = UserFontSize.getMaxFontSize(dm.widthPixels,
                         dm.heightPixels, SettingsActivity.this.getApplicationContext());
 
-                UserPreferencesInterface.writeTextFont(font);
+                UserPreferencesTableInterface.writeTextFont(font);
                 final int maxFontSize = UserFontSize.getMaxFontSize(dm.widthPixels,
                         dm.heightPixels, SettingsActivity.this.getApplicationContext());
                 if (oldMaxFontSize > maxFontSize) {
-                    UserPreferencesInterface.writeTextSize(maxFontSize);
+                    UserPreferencesTableInterface.writeTextSize(maxFontSize);
                 }
 
             }
@@ -215,7 +215,7 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         int fontSize = numberPicker.getValue();
-                        UserPreferencesInterface.writeTextSize(fontSize);
+                        UserPreferencesTableInterface.writeTextSize(fontSize);
 //                        SettingsActivity.this.getSharedPreferences(Constants.MASTER_SP_KEY, 0).edit().putInt(Constants.TEXT_SIZE_SP_KEY, fontSize).commit();
                     }
                 })
@@ -255,7 +255,7 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
                 //Display an error
                 return;
             }
-            UserPreferencesInterface.writeBackgroundUri(data.getData().toString());
+            UserPreferencesTableInterface.writeBackgroundUri(data.getData().toString());
             Intent serviceIntent = new Intent(this, SchedulingService.class);
             startService(serviceIntent);
 
@@ -273,7 +273,7 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
 
     @Override
     public void onColorSelection(DialogFragment dialogFragment, @ColorInt int selectedColor) {
-        UserPreferencesInterface.writeTextColour(selectedColor);
+        UserPreferencesTableInterface.writeTextColour(selectedColor);
     }
 
 
@@ -294,8 +294,8 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
         @Override
         public void onDurationSet(TimeDurationPicker view, long duration) {
             if(duration > 5000) {
-                UserPreferencesInterface.writeRefreshInterval(duration);
-                if (UserPreferencesInterface.readBackgroundUri()!=null) {
+                UserPreferencesTableInterface.writeRefreshInterval(duration);
+                if (UserPreferencesTableInterface.readBackgroundUri()!=null) {
                     SettingsActivity.this.stopService(new Intent(SettingsActivity.this, FetchQuoteUpdateBackgroundService.class));
                     Intent serviceIntent = new Intent(SettingsActivity.this, SchedulingService.class);
                     SettingsActivity.this.startService(serviceIntent);

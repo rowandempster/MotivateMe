@@ -6,9 +6,9 @@ import android.provider.BaseColumns;
  * Created by rowandempster on 2/21/17.
  */
 
-public class UsedTweetsContract implements BaseColumns {
+public class UsedTweetsTableContract implements BaseColumns {
 
-    private UsedTweetsContract() {
+    private UsedTweetsTableContract() {
     }
 
     public static final String TABLE_NAME = "used_tweets";

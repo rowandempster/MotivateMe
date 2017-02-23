@@ -6,8 +6,8 @@ import android.provider.BaseColumns;
  * Created by rowandempster on 2/20/17.
  */
 
-public final class UserPreferencesContract implements BaseColumns {
-    private UserPreferencesContract() {
+public final class UserPreferencesTableContract implements BaseColumns {
+    private UserPreferencesTableContract() {
     }
 
     public static final String TABLE_NAME = "user_preference";
