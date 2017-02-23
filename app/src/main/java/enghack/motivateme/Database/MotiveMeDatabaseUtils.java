@@ -117,6 +117,10 @@ public class MotiveMeDatabaseUtils {
         }
     }
 
+    public static boolean columnContainsLong(long toFind){
+
+    }
+
     private static Cursor getCursor(SQLiteDatabase db, String table, String id, String col) {
         return db.query(
                 table,                     // The table to query
@@ -129,7 +133,6 @@ public class MotiveMeDatabaseUtils {
         );
     }
 
-    @NonNull
     private static String[] getColumnProjection(String id, String col) {
         return new String[]{
                 id,
