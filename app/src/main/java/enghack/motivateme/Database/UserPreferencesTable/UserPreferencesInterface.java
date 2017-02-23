@@ -109,7 +109,7 @@ public class UserPreferencesInterface {
 
     public static long readRefreshInterval() {
         if (MotivateMeDbHelper.getInstance() != null) {
-            int refresh = MotiveMeDatabaseUtils.readFirstInt(MotivateMeDbHelper.getInstance().getReadableDatabase(), UserPreferencesContract.TABLE_NAME,
+            long refresh = MotiveMeDatabaseUtils.readFirstLong(MotivateMeDbHelper.getInstance().getReadableDatabase(), UserPreferencesContract.TABLE_NAME,
                     UserPreferencesContract._ID, UserPreferencesContract.COLUMN_NAME_REFRESH_INTERVAL);
             return refresh == 0 ? 1000 * 60 * 60 * 24 : refresh;
         } else {

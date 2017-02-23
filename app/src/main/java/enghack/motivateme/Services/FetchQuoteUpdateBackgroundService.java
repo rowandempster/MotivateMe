@@ -23,6 +23,7 @@ import java.util.Set;
 
 import enghack.motivateme.Constants;
 import enghack.motivateme.Database.MotivateMeDbHelper;
+import enghack.motivateme.Database.UsedTweetsTable.UsedTweetsInterface;
 import enghack.motivateme.Database.UserPreferencesTable.UserPreferencesInterface;
 import twitter4j.Paging;
 import twitter4j.Status;
@@ -181,7 +182,7 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
                     get(UserPreferencesInterface.readQuoteCategory()),
                     new Paging(searchIndex, 500));
             for (Status tweet : statuses) {
-                String tweetID = Long.toString(tweet.getId());
+                long tweetID = tweet.getId();
                 if (worthyQuote(quote = tweet.getText(), tweetID)) {
                     addIDtoUsedTweets(tweetID);
                     break scavenge;
@@ -192,18 +193,14 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
         return quote;
     }
 
-    private void addIDtoUsedTweets(String id) {
-        SharedPreferences sp = getApplicationContext().getSharedPreferences("MotivateMeSP", 0);
-        Set<String> oldSet = sp.getStringSet("usedTweets", new HashSet<String>());
-        oldSet.add(id);
-        sp.edit().putStringSet("usedTweets", oldSet).apply();
+    private void addIDtoUsedTweets(long id) {
+        UsedTweetsInterface.writeNewUsedTweet(id);
     }
 
-    private boolean worthyQuote(String text, String id) {
-        SharedPreferences sp = getApplicationContext().getSharedPreferences("MotivateMeSP", 0);
-        Set<String> usedTweets = sp.getStringSet("usedTweets", new HashSet<String>());
+    private boolean worthyQuote(String text, long id) {
+        boolean wasUsed = UsedTweetsInterface.isTweetUsed(id);
         if (text.length() > 115 || text.length() < 15 ||
-                usedTweets.contains(id) ||
+                wasUsed ||
                 (text.contains("@") || text.contains("RT") || text.contains("http") || text.contains("//")))
             return false;
         return true;

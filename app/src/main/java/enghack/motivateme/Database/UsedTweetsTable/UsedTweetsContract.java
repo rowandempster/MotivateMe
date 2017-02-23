@@ -12,5 +12,5 @@ public class UsedTweetsContract implements BaseColumns {
     }
 
     public static final String TABLE_NAME = "used_tweets";
-    public static final String COLUMN_NAME_QUOTE_CATEGORY = "tweet_id";
+    public static final String COLUMN_NAME_TWEET_ID = "tweet_id";
 }

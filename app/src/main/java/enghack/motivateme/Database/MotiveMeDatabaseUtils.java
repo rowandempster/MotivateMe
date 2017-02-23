@@ -117,8 +117,12 @@ public class MotiveMeDatabaseUtils {
         }
     }
 
-    public static boolean columnContainsLong(long toFind){
+    public static boolean columnContainsLong(SQLiteDatabase db, String table, String col, long toFind){
 
+        Cursor cursor = db.rawQuery("SELECT * FROM " + table + " WHERE "+ col +"=" + toFind, null);
+        boolean exists = (cursor.getCount() > 0);
+        cursor.close();
+        return exists;
     }
 
     private static Cursor getCursor(SQLiteDatabase db, String table, String id, String col) {
