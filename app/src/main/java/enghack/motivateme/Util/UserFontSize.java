@@ -6,7 +6,7 @@ import android.graphics.Typeface;
 import android.util.Log;
 
 import enghack.motivateme.Constants;
-import enghack.motivateme.Database.UserPreferencesTable.UserPreferencesManager;
+import enghack.motivateme.Database.UserPreferencesTable.UserPreferencesInterface;
 
 /**
  * Created by itwasarainyday on 20/02/17.
@@ -28,7 +28,7 @@ public class UserFontSize {
         float[] space = new float[1];
 
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        paint.setTypeface(Typeface.createFromAsset(context.getAssets(), UserPreferencesManager.readTextFont()));
+        paint.setTypeface(Typeface.createFromAsset(context.getAssets(), UserPreferencesInterface.readTextFont()));
 
         while(true) {
             wideLetter=0;

@@ -1,11 +1,8 @@
 package enghack.motivateme;
 
 import android.app.Application;
-import android.util.Log;
 
 import com.facebook.stetho.Stetho;
-
-import enghack.motivateme.Database.UserPreferencesTable.UserPreferencesManager;
 
 /**
  * Created by rowandempster on 2/20/17.

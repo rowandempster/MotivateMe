@@ -80,27 +80,27 @@ public class MotiveMeDatabaseUtils {
 
     public static int readFirstInt(SQLiteDatabase db, String table, String id, String col) {
         if (db == null) {
-            return -1;
+            return 0;
         }
 
         Cursor cursor = getCursor(db, table, id, col);
         if (cursor.moveToFirst()) {
             return cursor.getInt(cursor.getColumnIndex(col));
         } else {
-            return -1;
+            return 0;
         }
     }
 
     public static long readFirstLong(SQLiteDatabase db, String table, String id, String col){
         if (db == null) {
-            return -1;
+            return 0;
         }
 
         Cursor cursor = getCursor(db, table, id, col);
         if (cursor.moveToFirst()) {
             return cursor.getLong(cursor.getColumnIndex(col));
         } else {
-            return -1;
+            return 0;
         }
     }
 
@@ -117,6 +117,14 @@ public class MotiveMeDatabaseUtils {
         }
     }
 
+    public static boolean columnContainsLong(SQLiteDatabase db, String table, String col, long toFind){
+
+        Cursor cursor = db.rawQuery("SELECT * FROM " + table + " WHERE "+ col +"=" + toFind, null);
+        boolean exists = (cursor.getCount() > 0);
+        cursor.close();
+        return exists;
+    }
+
     private static Cursor getCursor(SQLiteDatabase db, String table, String id, String col) {
         return db.query(
                 table,                     // The table to query
@@ -129,7 +137,6 @@ public class MotiveMeDatabaseUtils {
         );
     }
 
-    @NonNull
     private static String[] getColumnProjection(String id, String col) {
         return new String[]{
                 id,
