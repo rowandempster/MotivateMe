@@ -1,13 +1,18 @@
 package enghack.motivateme.Tasks.PullTweets;
 
-import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import enghack.motivateme.Database.MotivateMeDbHelper;
+import enghack.motivateme.Database.MotivateMeDatabaseUtils;
+import enghack.motivateme.Database.QuotesToUseTable.QuotesToUseTableContract;
 import enghack.motivateme.Database.QuotesToUseTable.QuotesToUseTableInterface;
+import enghack.motivateme.Database.TwitterAccountsLastUsedTweetTable.TwitterAccountsLastUsedTweetTableInterface;
 import enghack.motivateme.Database.UsedTweetsTable.UsedTweetsTableInterface;
+import enghack.motivateme.Database.UserPreferencesTable.UserPreferencesTableInterface;
 import enghack.motivateme.Models.QuoteDatabaseModel;
 import enghack.motivateme.TwitterInstance;
 import twitter4j.Paging;
@@ -19,34 +24,53 @@ import twitter4j.TwitterException;
  */
 
 public class PullTweetsTask extends AsyncTask<PullTweetsParams, Void, Void> {
-    private Context _context;
+    private static PullTweetsTask _currTask;
 
-    public PullTweetsTask(Context context) {
-        _context = context;
+    public static void pullTweetsIfNeeded(SQLiteDatabase db, PullTweetsParams toPull) {
+        if (MotivateMeDatabaseUtils.isTableEmpty(db, QuotesToUseTableContract.TABLE_NAME)) {
+            pullTweetsNotSafe(toPull);
+        } else {
+            MotivateMeDbHelper.closeHelper();
+        }
+    }
+
+    public static void pullTweetsNotSafe(PullTweetsParams toPull) {
+        if (_currTask == null) {
+            _currTask = new PullTweetsTask();
+            _currTask.execute(toPull);
+        }
     }
 
     @Override
     protected Void doInBackground(PullTweetsParams... pullTweetsParams) {
-        MotivateMeDbHelper.openHelper(_context);
         List<twitter4j.Status> tweets = getTweets(pullTweetsParams);
-        filterTweets(tweets);
+        recordLastUsedQuotes(pullTweetsParams[0].getCategory(), tweets.get(tweets.size() - 1).getId()-1);
+        tweets = filterTweets(tweets);
         putInDatabase(tweets);
         MotivateMeDbHelper.closeHelper();
+        _currTask = null;
         return null;
     }
 
     private void putInDatabase(List<twitter4j.Status> quotes) {
-        for(twitter4j.Status quote : quotes){
+        for (twitter4j.Status quote : quotes) {
             QuotesToUseTableInterface.addQuote(new QuoteDatabaseModel(quote.getText(), quote.getId()));
         }
     }
 
-    private void filterTweets(List<twitter4j.Status> tweets) {
-        for(twitter4j.Status tweet : tweets){
-            if(!worthyTweet(tweet)){
-                tweets.remove(tweet);
+    private void recordLastUsedQuotes(String pulledAccount, long id) {
+        TwitterAccountsLastUsedTweetTableInterface.putLastUsedTweet(pulledAccount, id);
+    }
+
+
+    private List<twitter4j.Status> filterTweets(List<twitter4j.Status> tweets) {
+        List<twitter4j.Status> goodQuotes = new ArrayList<>();
+        for (twitter4j.Status tweet : tweets) {
+            if (worthyTweet(tweet)) {
+                goodQuotes.add(tweet);
             }
         }
+        return goodQuotes;
     }
 
     private boolean worthyTweet(twitter4j.Status tweet) {
@@ -60,8 +84,14 @@ public class PullTweetsTask extends AsyncTask<PullTweetsParams, Void, Void> {
 
     private List<twitter4j.Status> getTweets(PullTweetsParams[] pullTweetsParams) {
         try {
+            Paging paging = new Paging();
+            paging.setCount(pullTweetsParams[0].getNumTweetsToGet());
+            long lastUsedId = TwitterAccountsLastUsedTweetTableInterface.getLastUsedTweet(pullTweetsParams[0].getCategory());
+            if(lastUsedId>0) {
+                paging.setMaxId(lastUsedId);
+            }
             return TwitterInstance.getInstance().getUserTimeline(pullTweetsParams[0].getCategory(),
-                    new Paging(0, pullTweetsParams[0].getNumTweetsToGet()));
+                    paging);
         } catch (TwitterException e) {
             e.printStackTrace();
             return null;

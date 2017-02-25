@@ -21,6 +21,7 @@ import java.util.List;
 
 import enghack.motivateme.Constants;
 import enghack.motivateme.Database.MotivateMeDbHelper;
+import enghack.motivateme.Database.QuotesToUseTable.QuotesToUseTableInterface;
 import enghack.motivateme.Database.UsedTweetsTable.UsedTweetsTableInterface;
 import enghack.motivateme.Database.UserPreferencesTable.UserPreferencesTableInterface;
 import twitter4j.Paging;
@@ -46,15 +47,10 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
         Thread newThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                try {
-                    setBackground(findQuote());
+                    setBackground(QuotesToUseTableInterface.getAndRemoveFirstQuoteAndPullMoreIfNeeded().getText());
                     // "Anger is an acid that can do more harm to the vessel in which it is stored than to anything on which it is poured filling words. -Mark Twain"
                     jobFinished(jobParameters, false); //success
                     MotivateMeDbHelper.closeHelper();
-                } catch (TwitterException e) {
-                    e.printStackTrace();
-                    jobFinished(jobParameters, false); //failure
-                }
             }
 
         });
@@ -170,38 +166,6 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
         Canvas canvas = new Canvas(image);
         canvas.drawText(text, 0, baseline, paint);
         return image;
-    }
-    private String findQuote() throws TwitterException {
-        String quote;
-        int searchIndex = 1;
-
-        scavenge: while (true) {
-            List<Status> statuses = twitter.getUserTimeline(Constants.QUOTE_CATEGORY_TWITTER_ACCOUNT_MAP.
-                    get(UserPreferencesTableInterface.readQuoteCategory()),
-                    new Paging(searchIndex, 500));
-            for (Status tweet : statuses) {
-                long tweetID = tweet.getId();
-                if (worthyQuote(quote = tweet.getText(), tweetID)) {
-                    addIDtoUsedTweets(tweetID);
-                    break scavenge;
-                }
-            }
-            ++searchIndex;
-        }
-        return quote;
-    }
-
-    private void addIDtoUsedTweets(long id) {
-        UsedTweetsTableInterface.writeNewUsedTweet(id);
-    }
-
-    private boolean worthyQuote(String text, long id) {
-        boolean wasUsed = UsedTweetsTableInterface.isTweetUsed(id);
-        if (text.length() > 115 || text.length() < 15 ||
-                wasUsed ||
-                (text.contains("@") || text.contains("RT") || text.contains("http") || text.contains("//")))
-            return false;
-        return true;
     }
 
     private void twitterConnection() {

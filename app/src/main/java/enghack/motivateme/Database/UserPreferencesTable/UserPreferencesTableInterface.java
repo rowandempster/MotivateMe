@@ -3,8 +3,9 @@ package enghack.motivateme.Database.UserPreferencesTable;
 import android.graphics.Color;
 import android.util.Log;
 
+import enghack.motivateme.Constants;
 import enghack.motivateme.Database.MotivateMeDbHelper;
-import enghack.motivateme.Database.MotiveMeDatabaseUtils;
+import enghack.motivateme.Database.MotivateMeDatabaseUtils;
 
 /**
  * Created by rowandempster on 2/20/17.
@@ -14,51 +15,49 @@ public class UserPreferencesTableInterface {
 
     public static void writeTextSize(int textSize) {
         if (MotivateMeDbHelper.getInstance() != null) {
-            Log.d("asdf", "UserPreferencesTableInterface writing textsize " + textSize);
-
-            MotiveMeDatabaseUtils.replaceInt(MotivateMeDbHelper.getInstance().getWritableDatabase(), UserPreferencesTableContract.TABLE_NAME,
+            MotivateMeDatabaseUtils.replaceInt(MotivateMeDbHelper.getInstance().getWritableDatabase(), UserPreferencesTableContract.TABLE_NAME,
                     UserPreferencesTableContract.COLUMN_NAME_TEXT_SIZE, textSize);
         }
     }
 
     public static void writeQuoteCategory(int category) {
         if (MotivateMeDbHelper.getInstance() != null) {
-            MotiveMeDatabaseUtils.replaceInt(MotivateMeDbHelper.getInstance().getWritableDatabase(), UserPreferencesTableContract.TABLE_NAME,
+            MotivateMeDatabaseUtils.replaceInt(MotivateMeDbHelper.getInstance().getWritableDatabase(), UserPreferencesTableContract.TABLE_NAME,
                     UserPreferencesTableContract.COLUMN_NAME_QUOTE_CATEGORY, category);
         }
     }
 
     public static void writeTextFont(String font) {
         if (MotivateMeDbHelper.getInstance() != null) {
-            MotiveMeDatabaseUtils.replaceString(MotivateMeDbHelper.getInstance().getWritableDatabase(), UserPreferencesTableContract.TABLE_NAME,
+            MotivateMeDatabaseUtils.replaceString(MotivateMeDbHelper.getInstance().getWritableDatabase(), UserPreferencesTableContract.TABLE_NAME,
                     UserPreferencesTableContract.COLUMN_NAME_TEXT_FONT, font);
         }
     }
 
     public static void writeBackgroundUri(String uri) {
         if (MotivateMeDbHelper.getInstance() != null) {
-            MotiveMeDatabaseUtils.replaceString(MotivateMeDbHelper.getInstance().getWritableDatabase(), UserPreferencesTableContract.TABLE_NAME,
+            MotivateMeDatabaseUtils.replaceString(MotivateMeDbHelper.getInstance().getWritableDatabase(), UserPreferencesTableContract.TABLE_NAME,
                     UserPreferencesTableContract.COLUMN_NAME_BACKGROUND_URI, uri);
         }
     }
 
     public static void writeTextColour(int colour) {
         if (MotivateMeDbHelper.getInstance() != null) {
-            MotiveMeDatabaseUtils.replaceInt(MotivateMeDbHelper.getInstance().getWritableDatabase(), UserPreferencesTableContract.TABLE_NAME,
+            MotivateMeDatabaseUtils.replaceInt(MotivateMeDbHelper.getInstance().getWritableDatabase(), UserPreferencesTableContract.TABLE_NAME,
                     UserPreferencesTableContract.COLUMN_NAME_TEXT_COLOUR, colour);
         }
     }
 
     public static void writeRefreshInterval(long interval) {
         if (MotivateMeDbHelper.getInstance() != null) {
-            MotiveMeDatabaseUtils.replaceLong(MotivateMeDbHelper.getInstance().getWritableDatabase(), UserPreferencesTableContract.TABLE_NAME,
+            MotivateMeDatabaseUtils.replaceLong(MotivateMeDbHelper.getInstance().getWritableDatabase(), UserPreferencesTableContract.TABLE_NAME,
                     UserPreferencesTableContract.COLUMN_NAME_REFRESH_INTERVAL, interval);
         }
     }
 
     public static int readTextSize() {
         if (MotivateMeDbHelper.getInstance() != null) {
-            int readSize = MotiveMeDatabaseUtils.readFirstInt(MotivateMeDbHelper.getInstance().getReadableDatabase(), UserPreferencesTableContract.TABLE_NAME,
+            int readSize = MotivateMeDatabaseUtils.readFirstInt(MotivateMeDbHelper.getInstance().getReadableDatabase(), UserPreferencesTableContract.TABLE_NAME,
                     UserPreferencesTableContract._ID, UserPreferencesTableContract.COLUMN_NAME_TEXT_SIZE);
             return readSize == 0 ? 60 : readSize;
         } else {
@@ -66,19 +65,19 @@ public class UserPreferencesTableInterface {
         }
     }
 
-    public static int readQuoteCategory() {
+    public static String readQuoteCategory() {
         if (MotivateMeDbHelper.getInstance() != null) {
-            int cat = MotiveMeDatabaseUtils.readFirstInt(MotivateMeDbHelper.getInstance().getReadableDatabase(), UserPreferencesTableContract.TABLE_NAME,
+            int cat = MotivateMeDatabaseUtils.readFirstInt(MotivateMeDbHelper.getInstance().getReadableDatabase(), UserPreferencesTableContract.TABLE_NAME,
                     UserPreferencesTableContract._ID, UserPreferencesTableContract.COLUMN_NAME_QUOTE_CATEGORY);
-            return cat == 0 ? 0 : cat;
+            return Constants.QUOTE_CATEGORY_TWITTER_ACCOUNT_MAP.get(cat);
         } else {
-            return 0;
+            return Constants.QUOTE_CATEGORY_TWITTER_ACCOUNT_MAP.get(0);
         }
     }
 
     public static String readTextFont() {
         if (MotivateMeDbHelper.getInstance() != null) {
-            String font = MotiveMeDatabaseUtils.readFirstString(MotivateMeDbHelper.getInstance().getReadableDatabase(), UserPreferencesTableContract.TABLE_NAME,
+            String font = MotivateMeDatabaseUtils.readFirstString(MotivateMeDbHelper.getInstance().getReadableDatabase(), UserPreferencesTableContract.TABLE_NAME,
                     UserPreferencesTableContract._ID, UserPreferencesTableContract.COLUMN_NAME_TEXT_FONT);
             return font == null ? "fonts/serif.ttf" : font;
         } else {
@@ -88,7 +87,7 @@ public class UserPreferencesTableInterface {
 
     public static String readBackgroundUri() {
         if (MotivateMeDbHelper.getInstance() != null) {
-            String uri = MotiveMeDatabaseUtils.readFirstString(MotivateMeDbHelper.getInstance().getReadableDatabase(), UserPreferencesTableContract.TABLE_NAME,
+            String uri = MotivateMeDatabaseUtils.readFirstString(MotivateMeDbHelper.getInstance().getReadableDatabase(), UserPreferencesTableContract.TABLE_NAME,
                     UserPreferencesTableContract._ID, UserPreferencesTableContract.COLUMN_NAME_BACKGROUND_URI);
             return uri;
         } else {
@@ -98,7 +97,7 @@ public class UserPreferencesTableInterface {
 
     public static int readTextColour() {
         if (MotivateMeDbHelper.getInstance() != null) {
-            int readColour = MotiveMeDatabaseUtils.readFirstInt(MotivateMeDbHelper.getInstance().getReadableDatabase(), UserPreferencesTableContract.TABLE_NAME,
+            int readColour = MotivateMeDatabaseUtils.readFirstInt(MotivateMeDbHelper.getInstance().getReadableDatabase(), UserPreferencesTableContract.TABLE_NAME,
                     UserPreferencesTableContract._ID, UserPreferencesTableContract.COLUMN_NAME_TEXT_COLOUR);
             return readColour == 0 ? Color.BLACK : readColour;
         } else {
@@ -108,7 +107,7 @@ public class UserPreferencesTableInterface {
 
     public static long readRefreshInterval() {
         if (MotivateMeDbHelper.getInstance() != null) {
-            long refresh = MotiveMeDatabaseUtils.readFirstLong(MotivateMeDbHelper.getInstance().getReadableDatabase(), UserPreferencesTableContract.TABLE_NAME,
+            long refresh = MotivateMeDatabaseUtils.readFirstLong(MotivateMeDbHelper.getInstance().getReadableDatabase(), UserPreferencesTableContract.TABLE_NAME,
                     UserPreferencesTableContract._ID, UserPreferencesTableContract.COLUMN_NAME_REFRESH_INTERVAL);
             return refresh == 0 ? 1000 * 60 * 60 * 24 : refresh;
         } else {

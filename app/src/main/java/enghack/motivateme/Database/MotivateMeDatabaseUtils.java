@@ -4,19 +4,17 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
-import enghack.motivateme.Database.UsedTweetsTable.UsedTweetsTableContract;
-
 /**
  * Created by rowandempster on 2/20/17.
  */
 
-public class MotiveMeDatabaseUtils {
+public class MotivateMeDatabaseUtils {
 
     public static void replaceInt(SQLiteDatabase db, String table, String col, int toWrite) {
         if (db != null) {
             ContentValues values = new ContentValues();
             values.put(col, toWrite);
-            if (isDbEmpty(db, table)) {
+            if (isTableEmpty(db, table)) {
                 writeInt(db, table, col, toWrite);
             } else {
                 db.update(table, values, "_id=1", null);
@@ -29,7 +27,7 @@ public class MotiveMeDatabaseUtils {
             if (db != null) {
                 ContentValues values = new ContentValues();
                 values.put(col, toWrite);
-                if (isDbEmpty(db, table)) {
+                if (isTableEmpty(db, table)) {
                     writeLong(db, table, col, toWrite);
                 } else {
                     db.update(table, values, "_id=1", null);
@@ -43,7 +41,7 @@ public class MotiveMeDatabaseUtils {
             if (db != null) {
                 ContentValues values = new ContentValues();
                 values.put(col, toWrite);
-                if (isDbEmpty(db, table)) {
+                if (isTableEmpty(db, table)) {
                     writeString(db, table, col, toWrite);
                 } else {
                     db.update(table, values, "_id=1", null);
@@ -142,7 +140,7 @@ public class MotiveMeDatabaseUtils {
         };
     }
 
-    public static boolean isDbEmpty(SQLiteDatabase db, String table) {
+    public static boolean isTableEmpty(SQLiteDatabase db, String table) {
         String count = "SELECT count(*) FROM " + table;
         Cursor mcursor = db.rawQuery(count, null);
         mcursor.moveToFirst();
