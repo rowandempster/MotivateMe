@@ -4,7 +4,6 @@ import android.app.WallpaperManager;
 import android.app.job.JobParameters;
 import android.app.job.JobService;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -17,14 +16,14 @@ import android.view.WindowManager;
 import java.io.IOException;
 
 import android.net.Uri;
-import java.util.HashSet;
+
 import java.util.List;
-import java.util.Set;
 
 import enghack.motivateme.Constants;
 import enghack.motivateme.Database.MotivateMeDbHelper;
-import enghack.motivateme.Database.UsedTweetsTable.UsedTweetsInterface;
-import enghack.motivateme.Database.UserPreferencesTable.UserPreferencesInterface;
+import enghack.motivateme.Database.QuotesToUseTable.QuotesToUseTableInterface;
+import enghack.motivateme.Database.UsedTweetsTable.UsedTweetsTableInterface;
+import enghack.motivateme.Database.UserPreferencesTable.UserPreferencesTableInterface;
 import twitter4j.Paging;
 import twitter4j.Status;
 import twitter4j.Twitter;
@@ -48,15 +47,10 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
         Thread newThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                try {
-                    setBackground(findQuote());
+                    setBackground(QuotesToUseTableInterface.getAndRemoveFirstQuoteAndPullMoreIfNeeded().getText());
                     // "Anger is an acid that can do more harm to the vessel in which it is stored than to anything on which it is poured filling words. -Mark Twain"
                     jobFinished(jobParameters, false); //success
                     MotivateMeDbHelper.closeHelper();
-                } catch (TwitterException e) {
-                    e.printStackTrace();
-                    jobFinished(jobParameters, false); //failure
-                }
             }
 
         });
@@ -78,8 +72,8 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
             height = width;
             width = temp;
         }
-        int textSize = UserPreferencesInterface.readTextSize();
-        int textColor = UserPreferencesInterface.readTextColour();
+        int textSize = UserPreferencesTableInterface.readTextSize();
+        int textColor = UserPreferencesTableInterface.readTextColour();
 
         int textHeight = (int) (height * 0.05);
                 //((height*0.80 - ((words.length / 2) * (textSize + Constants.NEWLINE_BUFFER))) / 2);
@@ -90,7 +84,7 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
 
         Bitmap background = null;
         try {
-            background = MediaStore.Images.Media.getBitmap(this.getContentResolver(), Uri.parse(UserPreferencesInterface.readBackgroundUri()));
+            background = MediaStore.Images.Media.getBitmap(this.getContentResolver(), Uri.parse(UserPreferencesTableInterface.readBackgroundUri()));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -98,7 +92,7 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
         Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         paint.setTextSize(textSize);
         paint.setColor(textColor);
-        paint.setTypeface(Typeface.createFromAsset(getApplicationContext().getAssets(), UserPreferencesInterface.readTextFont()));
+        paint.setTypeface(Typeface.createFromAsset(getApplicationContext().getAssets(), UserPreferencesTableInterface.readTextFont()));
         paint.setTextAlign(Paint.Align.LEFT);
 
         float[] space = new float[1];
@@ -172,38 +166,6 @@ public class FetchQuoteUpdateBackgroundService extends JobService {
         Canvas canvas = new Canvas(image);
         canvas.drawText(text, 0, baseline, paint);
         return image;
-    }
-    private String findQuote() throws TwitterException {
-        String quote;
-        int searchIndex = 1;
-
-        scavenge: while (true) {
-            List<Status> statuses = twitter.getUserTimeline(Constants.QUOTE_CATEGORY_TWITTER_ACCOUNT_MAP.
-                    get(UserPreferencesInterface.readQuoteCategory()),
-                    new Paging(searchIndex, 500));
-            for (Status tweet : statuses) {
-                long tweetID = tweet.getId();
-                if (worthyQuote(quote = tweet.getText(), tweetID)) {
-                    addIDtoUsedTweets(tweetID);
-                    break scavenge;
-                }
-            }
-            ++searchIndex;
-        }
-        return quote;
-    }
-
-    private void addIDtoUsedTweets(long id) {
-        UsedTweetsInterface.writeNewUsedTweet(id);
-    }
-
-    private boolean worthyQuote(String text, long id) {
-        boolean wasUsed = UsedTweetsInterface.isTweetUsed(id);
-        if (text.length() > 115 || text.length() < 15 ||
-                wasUsed ||
-                (text.contains("@") || text.contains("RT") || text.contains("http") || text.contains("//")))
-            return false;
-        return true;
     }
 
     private void twitterConnection() {

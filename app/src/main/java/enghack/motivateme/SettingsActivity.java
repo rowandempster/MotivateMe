@@ -16,6 +16,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,9 +31,13 @@ import java.util.ArrayList;
 import biz.kasual.materialnumberpicker.MaterialNumberPicker;
 import enghack.motivateme.CustomViews.SettingOptionCustomView;
 import enghack.motivateme.Database.MotivateMeDbHelper;
-import enghack.motivateme.Database.UserPreferencesTable.UserPreferencesInterface;
+import enghack.motivateme.Database.QuotesToUseTable.QuotesToUseTableInterface;
+import enghack.motivateme.Database.UserPreferencesTable.UserPreferencesTableInterface;
+import enghack.motivateme.Models.QuoteDatabaseModel;
 import enghack.motivateme.Services.FetchQuoteUpdateBackgroundService;
 import enghack.motivateme.Services.SchedulingService;
+import enghack.motivateme.Tasks.PullTweets.PullTweetsParams;
+import enghack.motivateme.Tasks.PullTweets.PullTweetsTask;
 import enghack.motivateme.Util.UserFontSize;
 import mobi.upod.timedurationpicker.TimeDurationPicker;
 import mobi.upod.timedurationpicker.TimeDurationPickerDialogFragment;
@@ -45,6 +50,7 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
     SettingOptionCustomView _textSizeSetting;
     SettingOptionCustomView _fontSetting;
     SettingOptionCustomView _categorySetting;
+    SettingOptionCustomView _getAQuote;
     ArrayList<SettingOptionCustomView> _optionsList = new ArrayList();
     
 
@@ -53,6 +59,8 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
         super.onCreate(savedInstanceState);
 
         MotivateMeDbHelper.openHelper(this);
+        PullTweetsTask.pullTweetsIfNeeded(MotivateMeDbHelper.getInstance().getReadableDatabase(), new PullTweetsParams(Constants.QUOTE_CATEGORY_TWITTER_ACCOUNT_MAP.get(0), Constants.TWEETS_TO_PULL_NORMAL_AMOUNT));
+
 
         setContentView(R.layout.activity_settings);
         _root = (LinearLayout) findViewById(R.id.settings_root);
@@ -62,12 +70,16 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
         _textSizeSetting = new SettingOptionCustomView(getApplicationContext(), "Choose your text size", R.drawable.textsize);
         _fontSetting = new SettingOptionCustomView(getApplicationContext(), "Choose your font", R.drawable.fontchoice);
         _categorySetting = new SettingOptionCustomView(getApplicationContext(), "Choose your quote category", R.drawable.categoryicon);
+        _getAQuote = new SettingOptionCustomView(getApplicationContext(), "Get a quote!", R.drawable.categoryicon);
         _optionsList.add(_textColourSetting);
         _optionsList.add(_backgroundImageSetting);
         _optionsList.add(_timingSetting);
         _optionsList.add(_textSizeSetting);
         _optionsList.add(_fontSetting);
         _optionsList.add(_categorySetting);
+        if("debug".equals(BuildConfig.BUILD_TYPE)) {
+            _optionsList.add(_getAQuote);
+        }
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, 0, 1.0f);
         for (int i = 0; i < _optionsList.size(); i++) {
             _optionsList.get(i).setLayoutParams(lp);
@@ -93,6 +105,18 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
         setupTextSizeClick();
         setupFontClick();
         setupCatClick();
+        setupNextQuoteClick();
+    }
+
+    private void setupNextQuoteClick() {
+        _getAQuote.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                QuoteDatabaseModel quote = QuotesToUseTableInterface.getAndRemoveFirstQuoteAndPullMoreIfNeeded();
+                String quoteText = quote == null ? "No more quotes :(" : quote.getText();
+                Log.d("asdf", "Top quote : " + quoteText);
+            }
+        });
     }
 
     private void setupCatClick() {
@@ -106,7 +130,9 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
                 builder.setItems(colors, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        UserPreferencesInterface.writeQuoteCategory(which);
+                        UserPreferencesTableInterface.writeQuoteCategory(which);
+                        QuotesToUseTableInterface.clearTable();
+                        PullTweetsTask.pullTweetsNotSafe(new PullTweetsParams(Constants.QUOTE_CATEGORY_TWITTER_ACCOUNT_MAP.get(which), Constants.TWEETS_TO_PULL_NORMAL_AMOUNT));
                     }
                 });
                 builder.show();
@@ -170,11 +196,11 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
                 final int oldMaxFontSize = UserFontSize.getMaxFontSize(dm.widthPixels,
                         dm.heightPixels, SettingsActivity.this.getApplicationContext());
 
-                UserPreferencesInterface.writeTextFont(font);
+                UserPreferencesTableInterface.writeTextFont(font);
                 final int maxFontSize = UserFontSize.getMaxFontSize(dm.widthPixels,
                         dm.heightPixels, SettingsActivity.this.getApplicationContext());
                 if (oldMaxFontSize > maxFontSize) {
-                    UserPreferencesInterface.writeTextSize(maxFontSize);
+                    UserPreferencesTableInterface.writeTextSize(maxFontSize);
                 }
 
             }
@@ -215,7 +241,7 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         int fontSize = numberPicker.getValue();
-                        UserPreferencesInterface.writeTextSize(fontSize);
+                        UserPreferencesTableInterface.writeTextSize(fontSize);
 //                        SettingsActivity.this.getSharedPreferences(Constants.MASTER_SP_KEY, 0).edit().putInt(Constants.TEXT_SIZE_SP_KEY, fontSize).commit();
                     }
                 })
@@ -255,7 +281,7 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
                 //Display an error
                 return;
             }
-            UserPreferencesInterface.writeBackgroundUri(data.getData().toString());
+            UserPreferencesTableInterface.writeBackgroundUri(data.getData().toString());
             Intent serviceIntent = new Intent(this, SchedulingService.class);
             startService(serviceIntent);
 
@@ -273,7 +299,7 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
 
     @Override
     public void onColorSelection(DialogFragment dialogFragment, @ColorInt int selectedColor) {
-        UserPreferencesInterface.writeTextColour(selectedColor);
+        UserPreferencesTableInterface.writeTextColour(selectedColor);
     }
 
 
@@ -294,8 +320,8 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
         @Override
         public void onDurationSet(TimeDurationPicker view, long duration) {
             if(duration > 5000) {
-                UserPreferencesInterface.writeRefreshInterval(duration);
-                if (UserPreferencesInterface.readBackgroundUri()!=null) {
+                UserPreferencesTableInterface.writeRefreshInterval(duration);
+                if (UserPreferencesTableInterface.readBackgroundUri()!=null) {
                     SettingsActivity.this.stopService(new Intent(SettingsActivity.this, FetchQuoteUpdateBackgroundService.class));
                     Intent serviceIntent = new Intent(SettingsActivity.this, SchedulingService.class);
                     SettingsActivity.this.startService(serviceIntent);
