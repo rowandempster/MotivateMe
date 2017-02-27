@@ -77,7 +77,9 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
         _optionsList.add(_textSizeSetting);
         _optionsList.add(_fontSetting);
         _optionsList.add(_categorySetting);
-        _optionsList.add(_getAQuote);
+        if("debug".equals(BuildConfig.BUILD_TYPE)) {
+            _optionsList.add(_getAQuote);
+        }
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, 0, 1.0f);
         for (int i = 0; i < _optionsList.size(); i++) {
             _optionsList.get(i).setLayoutParams(lp);
