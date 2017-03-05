@@ -1,4 +1,4 @@
-package enghack.motivateme;
+package enghack.motivateme.Util;
 
 import java.util.HashMap;
 import java.util.Map;

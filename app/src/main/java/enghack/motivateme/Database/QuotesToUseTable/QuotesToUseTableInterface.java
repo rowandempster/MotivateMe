@@ -3,7 +3,7 @@ package enghack.motivateme.Database.QuotesToUseTable;
 import android.content.ContentValues;
 import android.database.Cursor;
 
-import enghack.motivateme.Constants;
+import enghack.motivateme.Util.Constants;
 import enghack.motivateme.Database.MotivateMeDbHelper;
 import enghack.motivateme.Database.MotivateMeDatabaseUtils;
 import enghack.motivateme.Database.UserPreferencesTable.UserPreferencesTableInterface;

@@ -2,7 +2,7 @@ package enghack.motivateme.Database.UserPreferencesTable;
 
 import android.graphics.Color;
 
-import enghack.motivateme.Constants;
+import enghack.motivateme.Util.Constants;
 
 /**
  * Created by rowandempster on 3/5/17.

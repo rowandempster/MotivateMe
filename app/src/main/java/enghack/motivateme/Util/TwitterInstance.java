@@ -1,4 +1,4 @@
-package enghack.motivateme;
+package enghack.motivateme.Util;
 
 import twitter4j.Twitter;
 import twitter4j.TwitterFactory;

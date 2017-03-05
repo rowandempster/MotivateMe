@@ -12,7 +12,7 @@ import enghack.motivateme.Database.QuotesToUseTable.QuotesToUseTableContract;
 import enghack.motivateme.Database.QuotesToUseTable.QuotesToUseTableInterface;
 import enghack.motivateme.Database.TwitterAccountsLastUsedTweetTable.TwitterAccountsLastUsedTweetTableInterface;
 import enghack.motivateme.Models.QuoteDatabaseModel;
-import enghack.motivateme.TwitterInstance;
+import enghack.motivateme.Util.TwitterInstance;
 import twitter4j.Paging;
 import twitter4j.TwitterException;
 

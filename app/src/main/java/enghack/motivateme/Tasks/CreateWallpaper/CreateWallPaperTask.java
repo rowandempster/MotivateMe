@@ -6,7 +6,7 @@ import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
 
-import enghack.motivateme.Constants;
+import enghack.motivateme.Util.Constants;
 import enghack.motivateme.Util.DisplayUtils;
 
 /**

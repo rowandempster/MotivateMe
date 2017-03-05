@@ -5,7 +5,6 @@ import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.util.Log;
 
-import enghack.motivateme.Constants;
 import enghack.motivateme.Database.UserPreferencesTable.UserPreferencesTableInterface;
 
 /**

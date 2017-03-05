@@ -17,7 +17,7 @@ public class MotivateMeDbHelper extends SQLiteOpenHelper {
     private static MotivateMeDbHelper _instance;
     private static int _openCount;
 
-    public static final int DATABASE_VERSION = 15;
+    public static final int DATABASE_VERSION = 16;
     public static final String DATABASE_NAME = "MotivateMe.db";
 
     public static final String SQL_CREATE_USER_PREFS_TABLE =
