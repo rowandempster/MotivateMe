@@ -6,7 +6,7 @@ import android.provider.BaseColumns;
  * Created by rowandempster on 2/22/17.
  */
 
-public class QuotesToUseTableContract implements BaseColumns{
+public class QuotesToUseTableContract implements BaseColumns {
     private QuotesToUseTableContract() {
     }
 

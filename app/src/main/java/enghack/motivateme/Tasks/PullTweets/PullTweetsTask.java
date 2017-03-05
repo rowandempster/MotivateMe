@@ -44,6 +44,9 @@ public class PullTweetsTask extends AsyncTask<PullTweetsParams, Void, Void> {
     @Override
     protected Void doInBackground(PullTweetsParams... pullTweetsParams) {
         List<twitter4j.Status> tweets = getTweets(pullTweetsParams);
+        if(tweets == null){
+            return null;
+        }
         recordLastUsedQuotes(pullTweetsParams[0].getCategory(), tweets.get(tweets.size() - 1).getId()-1);
         tweets = filterTweets(tweets);
         putInDatabase(tweets);
@@ -74,12 +77,11 @@ public class PullTweetsTask extends AsyncTask<PullTweetsParams, Void, Void> {
     }
 
     private boolean worthyTweet(twitter4j.Status tweet) {
-        boolean notUsed = !UsedTweetsTableInterface.isTweetUsed(tweet.getId());
         String text = tweet.getText();
         boolean longEnough = text.length() > 14;
         boolean shortEnough = text.length() < 116;
         boolean noBadCharacters = !(text.contains("@") || text.contains("RT") || text.contains("http") || text.contains("//"));
-        return notUsed && longEnough && shortEnough && noBadCharacters;
+        return longEnough && shortEnough && noBadCharacters;
     }
 
     private List<twitter4j.Status> getTweets(PullTweetsParams[] pullTweetsParams) {

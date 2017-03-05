@@ -29,27 +29,22 @@ public class SettingOptionCustomView extends LinearLayout {
         super(context);
         _title = title;
         _resId = resId;
-        initView(context);
+        initView();
     }
 
-    private void initView(Context context) {
+    private void initView() {
         inflate(getContext(), R.layout.settings_option, this);
         _titleTextView = (TextView) findViewById(R.id.setting_name);
         _image = (ImageView) findViewById(R.id.setting_image);
         setTitle(_title);
         setImage(_resId);
-
-
-
     }
 
-
-    public void setTitle(String title){
+    public void setTitle(String title) {
         _titleTextView.setText(title);
     }
 
-    public void setImage(int resId){
+    public void setImage(int resId) {
         _image.setImageResource(resId);
     }
-
 }

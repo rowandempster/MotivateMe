@@ -34,8 +34,6 @@ import enghack.motivateme.Database.MotivateMeDbHelper;
 import enghack.motivateme.Database.QuotesToUseTable.QuotesToUseTableInterface;
 import enghack.motivateme.Database.UserPreferencesTable.UserPreferencesTableInterface;
 import enghack.motivateme.Models.QuoteDatabaseModel;
-import enghack.motivateme.Services.FetchQuoteUpdateBackgroundService;
-import enghack.motivateme.Services.SchedulingService;
 import enghack.motivateme.Tasks.PullTweets.PullTweetsParams;
 import enghack.motivateme.Tasks.PullTweets.PullTweetsTask;
 import enghack.motivateme.Util.UserFontSize;
@@ -196,11 +194,11 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
                 final int oldMaxFontSize = UserFontSize.getMaxFontSize(dm.widthPixels,
                         dm.heightPixels, SettingsActivity.this.getApplicationContext());
 
-                UserPreferencesTableInterface.writeTextFont(font);
+                UserPreferencesTableInterface.writeTextFontAndRefreshWallpaper(font, SettingsActivity.this);
                 final int maxFontSize = UserFontSize.getMaxFontSize(dm.widthPixels,
                         dm.heightPixels, SettingsActivity.this.getApplicationContext());
                 if (oldMaxFontSize > maxFontSize) {
-                    UserPreferencesTableInterface.writeTextSize(maxFontSize);
+                    UserPreferencesTableInterface.writeTextSizeAndRefreshWallpaper(maxFontSize, SettingsActivity.this);
                 }
 
             }
@@ -241,8 +239,7 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         int fontSize = numberPicker.getValue();
-                        UserPreferencesTableInterface.writeTextSize(fontSize);
-//                        SettingsActivity.this.getSharedPreferences(Constants.MASTER_SP_KEY, 0).edit().putInt(Constants.TEXT_SIZE_SP_KEY, fontSize).commit();
+                        UserPreferencesTableInterface.writeTextSizeAndRefreshWallpaper(fontSize, SettingsActivity.this);
                     }
                 })
                 .show();
@@ -281,9 +278,7 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
                 //Display an error
                 return;
             }
-            UserPreferencesTableInterface.writeBackgroundUri(data.getData().toString());
-            Intent serviceIntent = new Intent(this, SchedulingService.class);
-            startService(serviceIntent);
+            UserPreferencesTableInterface.writeBackgroundUriAndRefreshWallpaper(data.getData().toString(), SettingsActivity.this);
 
         }
     }
@@ -299,7 +294,7 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
 
     @Override
     public void onColorSelection(DialogFragment dialogFragment, @ColorInt int selectedColor) {
-        UserPreferencesTableInterface.writeTextColour(selectedColor);
+        UserPreferencesTableInterface.writeTextColourAndRefreshWallpaper(selectedColor, SettingsActivity.this);
     }
 
 
@@ -320,12 +315,7 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
         @Override
         public void onDurationSet(TimeDurationPicker view, long duration) {
             if(duration > 5000) {
-                UserPreferencesTableInterface.writeRefreshInterval(duration);
-                if (UserPreferencesTableInterface.readBackgroundUri()!=null) {
-                    SettingsActivity.this.stopService(new Intent(SettingsActivity.this, FetchQuoteUpdateBackgroundService.class));
-                    Intent serviceIntent = new Intent(SettingsActivity.this, SchedulingService.class);
-                    SettingsActivity.this.startService(serviceIntent);
-                }
+                UserPreferencesTableInterface.writeRefreshIntervalAndRefreshWallpaper(duration, SettingsActivity.this);
             }
             else{
                 Toast.makeText(SettingsActivity.this, "Please enter more than 5 seconds", Toast.LENGTH_LONG).show();

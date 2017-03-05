@@ -3,6 +3,9 @@ package enghack.motivateme.Database;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.provider.BaseColumns;
+
+import enghack.motivateme.Models.QuoteDatabaseModel;
 
 /**
  * Created by rowandempster on 2/20/17.
@@ -80,42 +83,51 @@ public class MotivateMeDatabaseUtils {
         }
 
         Cursor cursor = getCursor(db, table, id, col);
+        int firstInt;
         if (cursor.moveToFirst()) {
-            return cursor.getInt(cursor.getColumnIndex(col));
+            firstInt = cursor.getInt(cursor.getColumnIndex(col));
         } else {
-            return 0;
+            firstInt = 0;
         }
+        cursor.close();
+        return firstInt;
     }
 
-    public static long readFirstLong(SQLiteDatabase db, String table, String id, String col){
+    public static long readFirstLong(SQLiteDatabase db, String table, String id, String col) {
         if (db == null) {
             return 0;
         }
 
         Cursor cursor = getCursor(db, table, id, col);
+        long firstLong;
         if (cursor.moveToFirst()) {
-            return cursor.getLong(cursor.getColumnIndex(col));
+            firstLong =  cursor.getLong(cursor.getColumnIndex(col));
         } else {
-            return 0;
+            firstLong = 0;
         }
+        cursor.close();
+        return firstLong;
     }
 
-    public static String readFirstString(SQLiteDatabase db, String table, String id, String col){
+    public static String readFirstString(SQLiteDatabase db, String table, String id, String col) {
         if (db == null) {
             return null;
         }
 
         Cursor cursor = getCursor(db, table, id, col);
+        String firstString;
         if (cursor.moveToFirst()) {
-            return cursor.getString(cursor.getColumnIndex(col));
+            firstString = cursor.getString(cursor.getColumnIndex(col));
         } else {
-            return null;
+            firstString =  null;
         }
+        cursor.close();
+        return firstString;
     }
 
-    public static boolean columnContainsLong(SQLiteDatabase db, String table, String col, long toFind){
+    public static boolean columnContainsLong(SQLiteDatabase db, String table, String col, long toFind) {
 
-        Cursor cursor = db.rawQuery("SELECT * FROM " + table + " WHERE "+ col +"=" + toFind, null);
+        Cursor cursor = db.rawQuery("SELECT * FROM " + table + " WHERE " + col + "=" + toFind, null);
         boolean exists = (cursor.getCount() > 0);
         cursor.close();
         return exists;
@@ -145,10 +157,15 @@ public class MotivateMeDatabaseUtils {
         Cursor mcursor = db.rawQuery(count, null);
         mcursor.moveToFirst();
         int icount = mcursor.getInt(0);
+        mcursor.close();
         return icount < 1;
     }
 
-    public static void deleteRow(SQLiteDatabase db, String table, long rowId){
+    public static void deleteRow(SQLiteDatabase db, String table, long rowId) {
         db.delete(table, "_id=?", new String[]{Long.toString(rowId)});
+    }
+
+    public static Cursor getMostRecentRow(SQLiteDatabase db, String table) {
+        return db.rawQuery("SELECT * FROM " + table + " ORDER BY " + BaseColumns._ID + " DESC LIMIT 1;", null);
     }
 }
