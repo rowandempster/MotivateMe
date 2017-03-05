@@ -16,13 +16,28 @@ import enghack.motivateme.Util.DisplayUtils;
 public class CreateWallPaperTask extends AsyncTask<CreateWallpaperParams, CreateWallpaperProgress, Void> {
     private CreateWallPaperTaskInterface _callback;
 
-    @Override
-    protected Void doInBackground(CreateWallpaperParams... wallpaperParams) {
-        return getBitmap(wallpaperParams[0]);
+    public CreateWallPaperTask(CreateWallPaperTaskInterface callback) {
+        _callback = callback;
     }
 
-    private Void getBitmap(CreateWallpaperParams wallpaperParam) {
-        return getWallpaper(wallpaperParam.getScreenWidth(), wallpaperParam.getScreenHeight(), wallpaperParam.getQuote(), wallpaperParam.getTextSize(), wallpaperParam.getTextColour(), wallpaperParam.getTextFont(), wallpaperParam.getBackground());
+    @Override
+    protected Void doInBackground(CreateWallpaperParams... wallpaperParams) {
+        CreateWallpaperParams params = wallpaperParams[0];
+        createWallpaper(params.getScreenWidth(), params.getScreenHeight(), params.getQuote(), params.getTextSize(),
+                params.getTextColour(), params.getTextFont(), params.getBackground());
+
+        return null;
+    }
+
+    @Override
+    protected void onProgressUpdate(CreateWallpaperProgress... info) {
+        double max = info[0].getMax();
+        double progress = info[0].getProgress();
+        if (progress == 0) {
+            _callback.onStart((int) max);
+        } else {
+            _callback.onProgress(info[0]);
+        }
     }
 
     @Override
@@ -30,23 +45,7 @@ public class CreateWallPaperTask extends AsyncTask<CreateWallpaperParams, Create
         _callback.onFinishUiThread();
     }
 
-    public CreateWallPaperTask(CreateWallPaperTaskInterface callback) {
-        _callback = callback;
-    }
-
-    @Override
-    protected void onProgressUpdate(CreateWallpaperProgress... info) {
-        double max = info[0].getMax();
-        double progress = info[0].getProgress();
-        if(progress == 0){
-            _callback.onStart((int) max);
-        }
-        else {
-            _callback.onProgress(info[0]);
-        }
-    }
-
-    private Void getWallpaper(int width, int height, String quote, int textSize, int textColor, Typeface typeface, Bitmap background){
+    private Void createWallpaper(int width, int height, String quote, int textSize, int textColor, Typeface typeface, Bitmap background) {
         String[] words = getWords(quote);
         DisplayUtils.WidthAndHeight widthAndHeight = DisplayUtils.getWidthAndHeight(width, height);
 
@@ -61,7 +60,7 @@ public class CreateWallPaperTask extends AsyncTask<CreateWallpaperParams, Create
         return null;
     }
 
-    private  Bitmap doMathAndGetBitmap(int textSize, Bitmap background, String[] words, DisplayUtils.WidthAndHeight widthAndHeight, int textHeight, Paint paint) {
+    private Bitmap doMathAndGetBitmap(int textSize, Bitmap background, String[] words, DisplayUtils.WidthAndHeight widthAndHeight, int textHeight, Paint paint) {
         String partialQuote;
         int currLineNum = 1;
         background = Bitmap.createScaledBitmap(background, widthAndHeight.width, widthAndHeight.height, true);
@@ -104,7 +103,7 @@ public class CreateWallPaperTask extends AsyncTask<CreateWallpaperParams, Create
         return background;
     }
 
-    private int getSpaceWidth(Paint paint){
+    private int getSpaceWidth(Paint paint) {
         float[] space = new float[1];
         paint.getTextWidths(" ", space);
         return (int) space[0];
@@ -131,18 +130,12 @@ public class CreateWallPaperTask extends AsyncTask<CreateWallpaperParams, Create
         comboImage.drawBitmap(background, 0, 0, null);
         comboImage.drawBitmap(foreground, horizStart, vertStart, null);
 
-//        Bitmap bmOverlay = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-//        Canvas canvas = new Canvas(bmOverlay);
-//        canvas.drawBitmap(bmp1, new Matrix(), null);
-//        canvas.drawBitmap(bmp2, 0, 0, null);
-//        return bmOverlay;
-
         return cs;
     }
 
     private Bitmap textAsBitmap(String text, Paint paint) {
         float baseline = -paint.ascent(); // ascent() is negative
-        int width = (int) (paint.measureText(text) + 0.5f); // round
+        int width = (int) (paint.measureText(text) + 0.5f);
         int height = (int) (baseline + paint.descent() + 0.5f);
         Bitmap image = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(image);

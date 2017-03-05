@@ -14,7 +14,7 @@ import java.io.InputStream;
 
 public class BitmapUtils {
     public static Bitmap decodeSampledBitmapFromUri(Context context, Uri imageUri, BitmapFactory.Options options) throws FileNotFoundException {
-        if(options == null){
+        if (options == null) {
             options = new BitmapFactory.Options();
         }
         InputStream iStream = context.getContentResolver().openInputStream(imageUri);

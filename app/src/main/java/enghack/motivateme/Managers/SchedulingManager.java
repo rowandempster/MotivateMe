@@ -8,7 +8,6 @@ import android.content.Context;
 import enghack.motivateme.Database.MotivateMeDbHelper;
 import enghack.motivateme.Database.UserPreferencesTable.UserPreferencesTableInterface;
 import enghack.motivateme.Services.UpdateWallpaperService;
-import enghack.motivateme.Util.MotivateMeWallpaperManager;
 
 /**
  * Created by rowandempster on 2/26/17.

@@ -9,7 +9,7 @@ import android.view.WindowManager;
 
 public class DisplayUtils {
 
-    public static WidthAndHeight getWidthAndHeight(int width, int height){
+    public static WidthAndHeight getWidthAndHeight(int width, int height) {
         if (width > height) {
             int temp = height;
             height = width;
@@ -19,7 +19,7 @@ public class DisplayUtils {
         return new WidthAndHeight(width, height);
     }
 
-    public static class WidthAndHeight{
+    public static class WidthAndHeight {
         public int width;
         public int height;
 

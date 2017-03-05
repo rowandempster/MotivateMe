@@ -5,11 +5,11 @@ package enghack.motivateme.Util;
  */
 
 public class StringUtils {
-    public static boolean isNullOrEmpty(String string){
-        if(string == null){
+    public static boolean isNullOrEmpty(String string) {
+        if (string == null) {
             return true;
         }
-        if("".equals(string)){
+        if ("".equals(string)) {
             return true;
         }
         return false;

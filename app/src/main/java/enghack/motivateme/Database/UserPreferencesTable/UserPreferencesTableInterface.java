@@ -6,7 +6,7 @@ import android.database.Cursor;
 import enghack.motivateme.Constants;
 import enghack.motivateme.Database.MotivateMeDbHelper;
 import enghack.motivateme.Database.MotivateMeDatabaseUtils;
-import enghack.motivateme.Services.SchedulingManager;
+import enghack.motivateme.Managers.SchedulingManager;
 import enghack.motivateme.Util.StringUtils;
 
 import static enghack.motivateme.Database.UserPreferencesTable.UserPreferencesDefaults.BACKGROUND_URI;

@@ -7,6 +7,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.net.Uri;
+import android.support.annotation.Nullable;
 import android.view.WindowManager;
 
 import java.io.FileNotFoundException;
@@ -49,20 +50,14 @@ public class MotivateMeWallpaperManager {
     public static CreateWallpaperParams getWallpaperParamsFromNewQuoteAndAddQuoteToUsed(UserPreferencesModel userPreferences, Context context) {
         MotivateMeDbHelper.openHelper(context);
         Typeface typeface = Typeface.createFromAsset(context.getAssets(), userPreferences.getTextFont());
-        Bitmap background = null;
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inSampleSize = 4;
-        try {
-            background = BitmapUtils.decodeSampledBitmapFromUri(context, Uri.parse(UserPreferencesTableInterface.readBackgroundUri()), options);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
+        Bitmap background = getBackgroundBitmap(context);
         QuoteDatabaseModel quote = QuotesToUseTableInterface.getAndRemoveFirstQuoteAndPullMoreIfNeeded();
         UsedTweetsTableInterface.writeNewUsedTweet(quote);
         WindowManager window = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         MotivateMeDbHelper.closeHelper();
         return new CreateWallpaperParams(window.getDefaultDisplay().getWidth(), window.getDefaultDisplay().getHeight(), quote.getText(), userPreferences.getTextSize(), userPreferences.getTextColour(), typeface, background);
     }
+
 
     //Private Factory methods
 
@@ -110,14 +105,7 @@ public class MotivateMeWallpaperManager {
         QuoteDatabaseModel quote = getQuote();
         WindowManager window = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         Typeface typeface = Typeface.createFromAsset(context.getAssets(), userPreferences.getTextFont());
-        Bitmap background = null;
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inSampleSize = 4;
-        try {
-            background = BitmapUtils.decodeSampledBitmapFromUri(context, Uri.parse(UserPreferencesTableInterface.readBackgroundUri()), options);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
+        Bitmap background = getBackgroundBitmap(context);
         return new CreateWallpaperParams(window.getDefaultDisplay().getWidth(), window.getDefaultDisplay().getHeight(), quote.getText(), userPreferences.getTextSize(), userPreferences.getTextColour(), typeface, background);
     }
 
@@ -133,5 +121,17 @@ public class MotivateMeWallpaperManager {
     private static UserPreferencesModel getUserPreferences(Context context) {
         MotivateMeDbHelper.openHelper(context);
         return UserPreferencesTableInterface.readUserPreferences();
+    }
+
+    private static Bitmap getBackgroundBitmap(Context context) {
+        Bitmap background = null;
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inSampleSize = 4;
+        try {
+            background = BitmapUtils.decodeSampledBitmapFromUri(context, Uri.parse(UserPreferencesTableInterface.readBackgroundUri()), options);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        return background;
     }
 }

@@ -101,7 +101,7 @@ public class MotivateMeDatabaseUtils {
         Cursor cursor = getCursor(db, table, id, col);
         long firstLong;
         if (cursor.moveToFirst()) {
-            firstLong =  cursor.getLong(cursor.getColumnIndex(col));
+            firstLong = cursor.getLong(cursor.getColumnIndex(col));
         } else {
             firstLong = 0;
         }
@@ -119,7 +119,7 @@ public class MotivateMeDatabaseUtils {
         if (cursor.moveToFirst()) {
             firstString = cursor.getString(cursor.getColumnIndex(col));
         } else {
-            firstString =  null;
+            firstString = null;
         }
         cursor.close();
         return firstString;
@@ -131,25 +131,6 @@ public class MotivateMeDatabaseUtils {
         boolean exists = (cursor.getCount() > 0);
         cursor.close();
         return exists;
-    }
-
-    private static Cursor getCursor(SQLiteDatabase db, String table, String id, String col) {
-        return db.query(
-                table,                     // The table to query
-                getColumnProjection(id, col),                               // The columns to return
-                null,                                // The columns for the WHERE clause
-                null,                            // The values for the WHERE clause
-                null,                                     // don't group the rows
-                null,                                     // don't filter by row groups
-                null                                 // The sort order
-        );
-    }
-
-    private static String[] getColumnProjection(String id, String col) {
-        return new String[]{
-                id,
-                col
-        };
     }
 
     public static boolean isTableEmpty(SQLiteDatabase db, String table) {
@@ -167,5 +148,24 @@ public class MotivateMeDatabaseUtils {
 
     public static Cursor getMostRecentRow(SQLiteDatabase db, String table) {
         return db.rawQuery("SELECT * FROM " + table + " ORDER BY " + BaseColumns._ID + " DESC LIMIT 1;", null);
+    }
+
+    private static Cursor getCursor(SQLiteDatabase db, String table, String id, String col) {
+        return db.query(
+                table,
+                getColumnProjection(id, col),
+                null,
+                null,
+                null,
+                null,
+                null
+        );
+    }
+
+    private static String[] getColumnProjection(String id, String col) {
+        return new String[]{
+                id,
+                col
+        };
     }
 }
