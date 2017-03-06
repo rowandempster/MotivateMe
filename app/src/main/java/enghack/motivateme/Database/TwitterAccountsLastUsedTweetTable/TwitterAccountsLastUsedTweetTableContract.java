@@ -2,7 +2,7 @@ package enghack.motivateme.Database.TwitterAccountsLastUsedTweetTable;
 
 import android.provider.BaseColumns;
 
-import enghack.motivateme.Constants;
+import enghack.motivateme.Util.Constants;
 
 /**
  * Created by rowandempster on 2/24/17.

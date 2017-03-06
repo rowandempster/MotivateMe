@@ -1,7 +1,8 @@
-package enghack.motivateme;
+package enghack.motivateme.Activities;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -29,15 +30,21 @@ import com.enrico.colorpicker.colorDialog;
 import java.util.ArrayList;
 
 import biz.kasual.materialnumberpicker.MaterialNumberPicker;
+import enghack.motivateme.BuildConfig;
 import enghack.motivateme.CustomViews.SettingOptionCustomView;
 import enghack.motivateme.Database.MotivateMeDbHelper;
 import enghack.motivateme.Database.QuotesToUseTable.QuotesToUseTableInterface;
+import enghack.motivateme.Database.UserPreferencesTable.UserPreferencesModel;
 import enghack.motivateme.Database.UserPreferencesTable.UserPreferencesTableInterface;
+import enghack.motivateme.Managers.MotivateMeWallpaperManager;
+import enghack.motivateme.Managers.SchedulingManager;
 import enghack.motivateme.Models.QuoteDatabaseModel;
-import enghack.motivateme.Services.FetchQuoteUpdateBackgroundService;
-import enghack.motivateme.Services.SchedulingService;
+import enghack.motivateme.R;
+import enghack.motivateme.Tasks.CreateWallpaper.CreateWallpaperParams;
+import enghack.motivateme.Tasks.PullTweets.PullTweetsCallback;
 import enghack.motivateme.Tasks.PullTweets.PullTweetsParams;
 import enghack.motivateme.Tasks.PullTweets.PullTweetsTask;
+import enghack.motivateme.Util.Constants;
 import enghack.motivateme.Util.UserFontSize;
 import mobi.upod.timedurationpicker.TimeDurationPicker;
 import mobi.upod.timedurationpicker.TimeDurationPickerDialogFragment;
@@ -52,7 +59,6 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
     SettingOptionCustomView _categorySetting;
     SettingOptionCustomView _getAQuote;
     ArrayList<SettingOptionCustomView> _optionsList = new ArrayList();
-    
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,8 +67,23 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
         MotivateMeDbHelper.openHelper(this);
         PullTweetsTask.pullTweetsIfNeeded(MotivateMeDbHelper.getInstance().getReadableDatabase(), new PullTweetsParams(Constants.QUOTE_CATEGORY_TWITTER_ACCOUNT_MAP.get(0), Constants.TWEETS_TO_PULL_NORMAL_AMOUNT));
 
-
         setContentView(R.layout.activity_settings);
+        setupViews();
+        setupClicks();
+        setupPermissions();
+
+    }
+
+    private void setupPermissions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
+                && ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                    33);
+            return;
+        }
+    }
+
+    private void setupViews() {
         _root = (LinearLayout) findViewById(R.id.settings_root);
         _textColourSetting = new SettingOptionCustomView(getApplicationContext(), "Choose your text colour", R.drawable.colour_wheel);
         _backgroundImageSetting = new SettingOptionCustomView(getApplicationContext(), "Choose your background", R.drawable.background_image);
@@ -77,7 +98,7 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
         _optionsList.add(_textSizeSetting);
         _optionsList.add(_fontSetting);
         _optionsList.add(_categorySetting);
-        if("debug".equals(BuildConfig.BUILD_TYPE)) {
+        if ("debug".equals(BuildConfig.BUILD_TYPE)) {
             _optionsList.add(_getAQuote);
         }
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, 0, 1.0f);
@@ -87,15 +108,6 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
         for (int i = 0; i < _optionsList.size(); i++) {
             _root.addView(_optionsList.get(i));
         }
-
-        setupClicks();
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
-                && ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                    33);
-            return;
-        }
     }
 
     private void setupClicks() {
@@ -104,39 +116,46 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
         setupTimingClick();
         setupTextSizeClick();
         setupFontClick();
-        setupCatClick();
+        setupCategoryClick();
         setupNextQuoteClick();
     }
 
     private void setupNextQuoteClick() {
-        _getAQuote.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                QuoteDatabaseModel quote = QuotesToUseTableInterface.getAndRemoveFirstQuoteAndPullMoreIfNeeded();
-                String quoteText = quote == null ? "No more quotes :(" : quote.getText();
-                Log.d("asdf", "Top quote : " + quoteText);
-            }
+        _getAQuote.setOnClickListener(view -> {
+            QuoteDatabaseModel quote = QuotesToUseTableInterface.getAndRemoveFirstQuoteAndPullMoreIfNeeded();
+            String quoteText = quote == null ? "No more quotes :(" : quote.getText();
+            Log.d("asdf", "Top quote : " + quoteText);
         });
     }
 
-    private void setupCatClick() {
-        _categorySetting.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                CharSequence colors[] = new CharSequence[]{"Inspirational Quotes", "Love Quotes", "Sport Quotes", "Book Quotes", "Uplifting Quotes", "Philosophy Quotes"};
+    private void setupCategoryClick() {
+        _categorySetting.setOnClickListener(view -> {
+            CharSequence categories[] = new String[]{"Inspirational Quotes", "Love Quotes", "Sport Quotes", "Book Quotes", "Uplifting Quotes", "Philosophy Quotes"};
 
-                AlertDialog.Builder builder = new AlertDialog.Builder(SettingsActivity.this);
-                builder.setTitle("Pick a Quote Category");
-                builder.setItems(colors, new DialogInterface.OnClickListener() {
+            AlertDialog.Builder builder = new AlertDialog.Builder(SettingsActivity.this);
+            builder.setTitle("Pick a Quote Category");
+            builder.setItems(categories, (dialog, categoryChosen) -> {
+                SchedulingManager.stopJobs(SettingsActivity.this);
+                UserPreferencesTableInterface.writeQuoteCategory(categoryChosen);
+                QuotesToUseTableInterface.clearTable();
+                ProgressDialog gettingTweetsProgress = new ProgressDialog(SettingsActivity.this);
+                gettingTweetsProgress.setMessage("Getting your new quotes...");
+                PullTweetsCallback callback = new PullTweetsCallback() {
                     @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        UserPreferencesTableInterface.writeQuoteCategory(which);
-                        QuotesToUseTableInterface.clearTable();
-                        PullTweetsTask.pullTweetsNotSafe(new PullTweetsParams(Constants.QUOTE_CATEGORY_TWITTER_ACCOUNT_MAP.get(which), Constants.TWEETS_TO_PULL_NORMAL_AMOUNT));
+                    public void start() {
+                        gettingTweetsProgress.show();
                     }
-                });
-                builder.show();
-            }
+
+                    @Override
+                    public void done() {
+                        gettingTweetsProgress.dismiss();
+                        MotivateMeWallpaperManager.updateWallPaperWithNewQuoteAndAddToUsedIfBackgroundIsSet(SettingsActivity.this);
+                        SchedulingManager.cancelJobsAndStart(SettingsActivity.this);
+                    }
+                };
+                PullTweetsTask.pullTweetsNotSafe(new PullTweetsParams(Constants.QUOTE_CATEGORY_TWITTER_ACCOUNT_MAP.get(categoryChosen), Constants.TWEETS_TO_PULL_NORMAL_AMOUNT), callback);
+            });
+            builder.show();
         });
     }
 
@@ -176,10 +195,9 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
         tv.setText(name);
         tv.setTypeface(Typeface.createFromAsset(SettingsActivity.this.getAssets(), font));
         tv.setTextSize(30);
-        if(font.equals("fonts/americana.ttf")){
+        if (font.equals("fonts/americana.ttf")) {
             tv.setBackgroundDrawable(getDrawable(R.drawable.border));
-        }
-        else {
+        } else {
             tv.setBackgroundDrawable(getDrawable(R.drawable.border_bottom_only));
         }
         tv.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
@@ -196,11 +214,11 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
                 final int oldMaxFontSize = UserFontSize.getMaxFontSize(dm.widthPixels,
                         dm.heightPixels, SettingsActivity.this.getApplicationContext());
 
-                UserPreferencesTableInterface.writeTextFont(font);
+                UserPreferencesTableInterface.writeTextFontAndRefreshWallpaper(font, SettingsActivity.this);
                 final int maxFontSize = UserFontSize.getMaxFontSize(dm.widthPixels,
                         dm.heightPixels, SettingsActivity.this.getApplicationContext());
                 if (oldMaxFontSize > maxFontSize) {
-                    UserPreferencesTableInterface.writeTextSize(maxFontSize);
+                    UserPreferencesTableInterface.writeTextSizeAndRefreshWallpaper(maxFontSize, SettingsActivity.this);
                 }
 
             }
@@ -241,8 +259,7 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         int fontSize = numberPicker.getValue();
-                        UserPreferencesTableInterface.writeTextSize(fontSize);
-//                        SettingsActivity.this.getSharedPreferences(Constants.MASTER_SP_KEY, 0).edit().putInt(Constants.TEXT_SIZE_SP_KEY, fontSize).commit();
+                        UserPreferencesTableInterface.writeTextSizeAndRefreshWallpaper(fontSize, SettingsActivity.this);
                     }
                 })
                 .show();
@@ -281,9 +298,7 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
                 //Display an error
                 return;
             }
-            UserPreferencesTableInterface.writeBackgroundUri(data.getData().toString());
-            Intent serviceIntent = new Intent(this, SchedulingService.class);
-            startService(serviceIntent);
+            UserPreferencesTableInterface.writeBackgroundUriAndRefreshWallpaper(data.getData().toString(), SettingsActivity.this);
 
         }
     }
@@ -299,7 +314,7 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
 
     @Override
     public void onColorSelection(DialogFragment dialogFragment, @ColorInt int selectedColor) {
-        UserPreferencesTableInterface.writeTextColour(selectedColor);
+        UserPreferencesTableInterface.writeTextColourAndRefreshWallpaper(selectedColor, SettingsActivity.this);
     }
 
 
@@ -319,15 +334,10 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
 
         @Override
         public void onDurationSet(TimeDurationPicker view, long duration) {
-            if(duration > 5000) {
+            if (duration > 5000) {
                 UserPreferencesTableInterface.writeRefreshInterval(duration);
-                if (UserPreferencesTableInterface.readBackgroundUri()!=null) {
-                    SettingsActivity.this.stopService(new Intent(SettingsActivity.this, FetchQuoteUpdateBackgroundService.class));
-                    Intent serviceIntent = new Intent(SettingsActivity.this, SchedulingService.class);
-                    SettingsActivity.this.startService(serviceIntent);
-                }
-            }
-            else{
+                SchedulingManager.cancelJobsAndStart(SettingsActivity.this, duration);
+            } else {
                 Toast.makeText(SettingsActivity.this, "Please enter more than 5 seconds", Toast.LENGTH_LONG).show();
             }
         }

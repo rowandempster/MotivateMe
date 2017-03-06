@@ -14,12 +14,12 @@
         android:theme="@style/AppTheme"
         android:name=".MotiveMeApplication">
         <service
-            android:name=".Services.FetchQuoteUpdateBackgroundService"
+            android:name=".Services.UpdateWallpaperService"
             android:permission="android.permission.BIND_JOB_SERVICE" />
         <service android:name=".Services.SchedulingService" />
 
         <activity
-            android:name=".SettingsActivity"
+            android:name=".Activities.SettingsActivity"
             android:configChanges="orientation"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar.FullScreen">

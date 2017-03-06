@@ -11,12 +11,9 @@ import enghack.motivateme.Database.MotivateMeDatabaseUtils;
 import enghack.motivateme.Database.QuotesToUseTable.QuotesToUseTableContract;
 import enghack.motivateme.Database.QuotesToUseTable.QuotesToUseTableInterface;
 import enghack.motivateme.Database.TwitterAccountsLastUsedTweetTable.TwitterAccountsLastUsedTweetTableInterface;
-import enghack.motivateme.Database.UsedTweetsTable.UsedTweetsTableInterface;
-import enghack.motivateme.Database.UserPreferencesTable.UserPreferencesTableInterface;
 import enghack.motivateme.Models.QuoteDatabaseModel;
-import enghack.motivateme.TwitterInstance;
+import enghack.motivateme.Util.TwitterInstance;
 import twitter4j.Paging;
-import twitter4j.Status;
 import twitter4j.TwitterException;
 
 /**
@@ -25,6 +22,7 @@ import twitter4j.TwitterException;
 
 public class PullTweetsTask extends AsyncTask<PullTweetsParams, Void, Void> {
     private static PullTweetsTask _currTask;
+    private PullTweetsCallback _callback;
 
     public static void pullTweetsIfNeeded(SQLiteDatabase db, PullTweetsParams toPull) {
         if (MotivateMeDatabaseUtils.isTableEmpty(db, QuotesToUseTableContract.TABLE_NAME)) {
@@ -41,14 +39,52 @@ public class PullTweetsTask extends AsyncTask<PullTweetsParams, Void, Void> {
         }
     }
 
+    public static void pullTweetsNotSafe(PullTweetsParams toPull, PullTweetsCallback callback) {
+        if (_currTask == null) {
+            _currTask = new PullTweetsTask(callback);
+            _currTask.execute(toPull);
+        }
+    }
+
+    public PullTweetsTask(PullTweetsCallback callback){
+        _callback = callback;
+    }
+
+    public PullTweetsTask(){
+        _callback = new PullTweetsCallback() {
+            @Override
+            public void start() {
+
+            }
+
+            @Override
+            public void done() {
+
+            }
+        };
+    }
+
+
+    @Override
+    protected void onPreExecute() {
+        _callback.start();
+    }
+
+    @Override
+    protected void onPostExecute(Void aVoid) {
+        _callback.done();
+        _currTask = null;
+    }
+
     @Override
     protected Void doInBackground(PullTweetsParams... pullTweetsParams) {
-        List<twitter4j.Status> tweets = getTweets(pullTweetsParams);
-        recordLastUsedQuotes(pullTweetsParams[0].getCategory(), tweets.get(tweets.size() - 1).getId()-1);
-        tweets = filterTweets(tweets);
-        putInDatabase(tweets);
-        MotivateMeDbHelper.closeHelper();
-        _currTask = null;
+        List<twitter4j.Status> tweets = getTweets(pullTweetsParams[0]);
+        if (tweets != null) {
+            recordLastPulledQuotes(pullTweetsParams[0].getCategory(), tweets.get(tweets.size() - 1).getId() - 1);
+            tweets = filterTweets(tweets);
+            putInDatabase(tweets);
+            MotivateMeDbHelper.closeHelper();
+        }
         return null;
     }
 
@@ -58,10 +94,9 @@ public class PullTweetsTask extends AsyncTask<PullTweetsParams, Void, Void> {
         }
     }
 
-    private void recordLastUsedQuotes(String pulledAccount, long id) {
+    private void recordLastPulledQuotes(String pulledAccount, long id) {
         TwitterAccountsLastUsedTweetTableInterface.putLastUsedTweet(pulledAccount, id);
     }
-
 
     private List<twitter4j.Status> filterTweets(List<twitter4j.Status> tweets) {
         List<twitter4j.Status> goodQuotes = new ArrayList<>();
@@ -74,24 +109,22 @@ public class PullTweetsTask extends AsyncTask<PullTweetsParams, Void, Void> {
     }
 
     private boolean worthyTweet(twitter4j.Status tweet) {
-        boolean notUsed = !UsedTweetsTableInterface.isTweetUsed(tweet.getId());
         String text = tweet.getText();
         boolean longEnough = text.length() > 14;
         boolean shortEnough = text.length() < 116;
         boolean noBadCharacters = !(text.contains("@") || text.contains("RT") || text.contains("http") || text.contains("//"));
-        return notUsed && longEnough && shortEnough && noBadCharacters;
+        return longEnough && shortEnough && noBadCharacters;
     }
 
-    private List<twitter4j.Status> getTweets(PullTweetsParams[] pullTweetsParams) {
+    private List<twitter4j.Status> getTweets(PullTweetsParams params) {
         try {
             Paging paging = new Paging();
-            paging.setCount(pullTweetsParams[0].getNumTweetsToGet());
-            long lastUsedId = TwitterAccountsLastUsedTweetTableInterface.getLastUsedTweet(pullTweetsParams[0].getCategory());
-            if(lastUsedId>0) {
+            paging.setCount(params.getNumTweetsToGet());
+            long lastUsedId = TwitterAccountsLastUsedTweetTableInterface.getLastUsedTweet(params.getCategory());
+            if (lastUsedId > 0) {
                 paging.setMaxId(lastUsedId);
             }
-            return TwitterInstance.getInstance().getUserTimeline(pullTweetsParams[0].getCategory(),
-                    paging);
+            return TwitterInstance.getInstance().getUserTimeline(params.getCategory(), paging);
         } catch (TwitterException e) {
             e.printStackTrace();
             return null;

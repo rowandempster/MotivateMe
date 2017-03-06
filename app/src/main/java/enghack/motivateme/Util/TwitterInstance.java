@@ -1,4 +1,4 @@
-package enghack.motivateme;
+package enghack.motivateme.Util;
 
 import twitter4j.Twitter;
 import twitter4j.TwitterFactory;
@@ -11,8 +11,8 @@ import twitter4j.conf.ConfigurationBuilder;
 public class TwitterInstance {
     private static Twitter _instance;
 
-    public static Twitter getInstance(){
-        if(_instance == null){
+    public static Twitter getInstance() {
+        if (_instance == null) {
             _instance = buildTwitter();
         }
         return _instance;
@@ -27,6 +27,5 @@ public class TwitterInstance {
                 .setOAuthAccessTokenSecret("X4Te52AsnPktMCABDsNyGgevHPxDDZKrylDWdC1YeE7FT");
         TwitterFactory tf = new TwitterFactory(cb.build());
         return tf.getInstance();
-        // set this with twitter result
     }
 }
