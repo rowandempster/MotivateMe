@@ -47,6 +47,20 @@ public class MotivateMeWallpaperManager {
         MotivateMeDbHelper.closeHelper();
     }
 
+    public static void updateWallPaperWithNewQuoteAndAddToUsedIfBackgroundIsSet(final Context context) {
+        UserPreferencesModel userPreferences = getUserPreferences(context);
+        if (StringUtils.isNullOrEmpty(userPreferences.getBackgroundUri())) {
+            return;
+        }
+
+        initProgressDialog(context);
+
+        CreateWallPaperTask wallPaperTask = new CreateWallPaperTask(getWallpaperCallbackInterface(context));
+        wallPaperTask.execute(getWallpaperParamsFromNewQuoteAndAddQuoteToUsed(userPreferences, context));
+
+        MotivateMeDbHelper.closeHelper();
+    }
+
     public static CreateWallpaperParams getWallpaperParamsFromNewQuoteAndAddQuoteToUsed(UserPreferencesModel userPreferences, Context context) {
         MotivateMeDbHelper.openHelper(context);
         Typeface typeface = Typeface.createFromAsset(context.getAssets(), userPreferences.getTextFont());
@@ -95,7 +109,7 @@ public class MotivateMeWallpaperManager {
 
     private static void initProgressDialog(Context context) {
         _settingWallPaperProgressDialog = new ProgressDialog(context);
-        _settingWallPaperProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        _settingWallPaperProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         _settingWallPaperProgressDialog.setMessage("Updating your wallpaper...");
         _settingWallPaperProgressDialog.setIndeterminate(false);
         _settingWallPaperProgressDialog.setMax(100);

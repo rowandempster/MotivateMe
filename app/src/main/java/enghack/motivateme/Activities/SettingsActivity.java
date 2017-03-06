@@ -2,6 +2,7 @@ package enghack.motivateme.Activities;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -33,9 +34,14 @@ import enghack.motivateme.BuildConfig;
 import enghack.motivateme.CustomViews.SettingOptionCustomView;
 import enghack.motivateme.Database.MotivateMeDbHelper;
 import enghack.motivateme.Database.QuotesToUseTable.QuotesToUseTableInterface;
+import enghack.motivateme.Database.UserPreferencesTable.UserPreferencesModel;
 import enghack.motivateme.Database.UserPreferencesTable.UserPreferencesTableInterface;
+import enghack.motivateme.Managers.MotivateMeWallpaperManager;
+import enghack.motivateme.Managers.SchedulingManager;
 import enghack.motivateme.Models.QuoteDatabaseModel;
 import enghack.motivateme.R;
+import enghack.motivateme.Tasks.CreateWallpaper.CreateWallpaperParams;
+import enghack.motivateme.Tasks.PullTweets.PullTweetsCallback;
 import enghack.motivateme.Tasks.PullTweets.PullTweetsParams;
 import enghack.motivateme.Tasks.PullTweets.PullTweetsTask;
 import enghack.motivateme.Util.Constants;
@@ -129,9 +135,25 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
             AlertDialog.Builder builder = new AlertDialog.Builder(SettingsActivity.this);
             builder.setTitle("Pick a Quote Category");
             builder.setItems(categories, (dialog, categoryChosen) -> {
+                SchedulingManager.stopJobs(SettingsActivity.this);
                 UserPreferencesTableInterface.writeQuoteCategory(categoryChosen);
                 QuotesToUseTableInterface.clearTable();
-                PullTweetsTask.pullTweetsNotSafe(new PullTweetsParams(Constants.QUOTE_CATEGORY_TWITTER_ACCOUNT_MAP.get(categoryChosen), Constants.TWEETS_TO_PULL_NORMAL_AMOUNT));
+                ProgressDialog gettingTweetsProgress = new ProgressDialog(SettingsActivity.this);
+                gettingTweetsProgress.setMessage("Getting your new quotes...");
+                PullTweetsCallback callback = new PullTweetsCallback() {
+                    @Override
+                    public void start() {
+                        gettingTweetsProgress.show();
+                    }
+
+                    @Override
+                    public void done() {
+                        gettingTweetsProgress.dismiss();
+                        MotivateMeWallpaperManager.updateWallPaperWithNewQuoteAndAddToUsedIfBackgroundIsSet(SettingsActivity.this);
+                        SchedulingManager.cancelJobsAndStart(SettingsActivity.this);
+                    }
+                };
+                PullTweetsTask.pullTweetsNotSafe(new PullTweetsParams(Constants.QUOTE_CATEGORY_TWITTER_ACCOUNT_MAP.get(categoryChosen), Constants.TWEETS_TO_PULL_NORMAL_AMOUNT), callback);
             });
             builder.show();
         });
@@ -313,7 +335,8 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
         @Override
         public void onDurationSet(TimeDurationPicker view, long duration) {
             if (duration > 5000) {
-                UserPreferencesTableInterface.writeRefreshIntervalAndRefreshWallpaper(duration, SettingsActivity.this);
+                UserPreferencesTableInterface.writeRefreshInterval(duration);
+                SchedulingManager.cancelJobsAndStart(SettingsActivity.this, duration);
             } else {
                 Toast.makeText(SettingsActivity.this, "Please enter more than 5 seconds", Toast.LENGTH_LONG).show();
             }

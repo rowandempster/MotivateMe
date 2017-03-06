@@ -22,6 +22,7 @@ import twitter4j.TwitterException;
 
 public class PullTweetsTask extends AsyncTask<PullTweetsParams, Void, Void> {
     private static PullTweetsTask _currTask;
+    private PullTweetsCallback _callback;
 
     public static void pullTweetsIfNeeded(SQLiteDatabase db, PullTweetsParams toPull) {
         if (MotivateMeDatabaseUtils.isTableEmpty(db, QuotesToUseTableContract.TABLE_NAME)) {
@@ -38,6 +39,43 @@ public class PullTweetsTask extends AsyncTask<PullTweetsParams, Void, Void> {
         }
     }
 
+    public static void pullTweetsNotSafe(PullTweetsParams toPull, PullTweetsCallback callback) {
+        if (_currTask == null) {
+            _currTask = new PullTweetsTask(callback);
+            _currTask.execute(toPull);
+        }
+    }
+
+    public PullTweetsTask(PullTweetsCallback callback){
+        _callback = callback;
+    }
+
+    public PullTweetsTask(){
+        _callback = new PullTweetsCallback() {
+            @Override
+            public void start() {
+
+            }
+
+            @Override
+            public void done() {
+
+            }
+        };
+    }
+
+
+    @Override
+    protected void onPreExecute() {
+        _callback.start();
+    }
+
+    @Override
+    protected void onPostExecute(Void aVoid) {
+        _callback.done();
+        _currTask = null;
+    }
+
     @Override
     protected Void doInBackground(PullTweetsParams... pullTweetsParams) {
         List<twitter4j.Status> tweets = getTweets(pullTweetsParams[0]);
@@ -46,7 +84,6 @@ public class PullTweetsTask extends AsyncTask<PullTweetsParams, Void, Void> {
             tweets = filterTweets(tweets);
             putInDatabase(tweets);
             MotivateMeDbHelper.closeHelper();
-            _currTask = null;
         }
         return null;
     }
