@@ -2,6 +2,8 @@ package enghack.motivateme.Activities;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -25,12 +27,12 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.enrico.colorpicker.colorDialog;
 
 import java.util.ArrayList;
 
 import biz.kasual.materialnumberpicker.MaterialNumberPicker;
 import enghack.motivateme.BuildConfig;
+import enghack.motivateme.CustomViews.ColourPickerFragment;
 import enghack.motivateme.CustomViews.SettingOptionCustomView;
 import enghack.motivateme.Database.MotivateMeDbHelper;
 import enghack.motivateme.Database.QuotesToUseTable.QuotesToUseTableInterface;
@@ -49,7 +51,7 @@ import enghack.motivateme.Util.UserFontSize;
 import mobi.upod.timedurationpicker.TimeDurationPicker;
 import mobi.upod.timedurationpicker.TimeDurationPickerDialogFragment;
 
-public class SettingsActivity extends AppCompatActivity implements colorDialog.ColorSelectedListener {
+public class SettingsActivity extends AppCompatActivity  {
     LinearLayout _root;
     SettingOptionCustomView _textColourSetting;
     SettingOptionCustomView _backgroundImageSetting;
@@ -307,16 +309,14 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
         _textColourSetting.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                colorDialog.showColorPicker(SettingsActivity.this, 0);
+                FragmentManager fragmentManager = getFragmentManager();
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                ColourPickerFragment fragment = new ColourPickerFragment();
+                fragmentTransaction.add(R.id.fragment_container, fragment);
+                fragmentTransaction.commit();
             }
         });
     }
-
-    @Override
-    public void onColorSelection(DialogFragment dialogFragment, @ColorInt int selectedColor) {
-        UserPreferencesTableInterface.writeTextColourAndRefreshWallpaper(selectedColor, SettingsActivity.this);
-    }
-
 
     private class PickerDialogFragment extends TimeDurationPickerDialogFragment {
 
