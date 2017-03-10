@@ -11,9 +11,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Build;
-import android.support.annotation.ColorInt;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.DialogFragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -31,18 +29,19 @@ import android.widget.Toast;
 import java.util.ArrayList;
 
 import biz.kasual.materialnumberpicker.MaterialNumberPicker;
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
 import enghack.motivateme.BuildConfig;
 import enghack.motivateme.CustomViews.ColourPickerFragment;
-import enghack.motivateme.CustomViews.SettingOptionCustomView;
+import enghack.motivateme.CustomViews.SettingOption;
 import enghack.motivateme.Database.MotivateMeDbHelper;
 import enghack.motivateme.Database.QuotesToUseTable.QuotesToUseTableInterface;
-import enghack.motivateme.Database.UserPreferencesTable.UserPreferencesModel;
 import enghack.motivateme.Database.UserPreferencesTable.UserPreferencesTableInterface;
 import enghack.motivateme.Managers.MotivateMeWallpaperManager;
 import enghack.motivateme.Managers.SchedulingManager;
 import enghack.motivateme.Models.QuoteDatabaseModel;
 import enghack.motivateme.R;
-import enghack.motivateme.Tasks.CreateWallpaper.CreateWallpaperParams;
 import enghack.motivateme.Tasks.PullTweets.PullTweetsCallback;
 import enghack.motivateme.Tasks.PullTweets.PullTweetsParams;
 import enghack.motivateme.Tasks.PullTweets.PullTweetsTask;
@@ -51,27 +50,19 @@ import enghack.motivateme.Util.UserFontSize;
 import mobi.upod.timedurationpicker.TimeDurationPicker;
 import mobi.upod.timedurationpicker.TimeDurationPickerDialogFragment;
 
-public class SettingsActivity extends AppCompatActivity  {
-    LinearLayout _root;
-    SettingOptionCustomView _textColourSetting;
-    SettingOptionCustomView _backgroundImageSetting;
-    SettingOptionCustomView _timingSetting;
-    SettingOptionCustomView _textSizeSetting;
-    SettingOptionCustomView _fontSetting;
-    SettingOptionCustomView _categorySetting;
-    SettingOptionCustomView _getAQuote;
-    ArrayList<SettingOptionCustomView> _optionsList = new ArrayList();
+public class SettingsActivity extends AppCompatActivity {
+    @BindView(R.id.settings_option_pick_new_quote)
+    SettingOption _getAQuoteSetting;
 
-    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         MotivateMeDbHelper.openHelper(this);
         PullTweetsTask.pullTweetsIfNeeded(MotivateMeDbHelper.getInstance().getReadableDatabase(), new PullTweetsParams(Constants.QUOTE_CATEGORY_TWITTER_ACCOUNT_MAP.get(0), Constants.TWEETS_TO_PULL_NORMAL_AMOUNT));
 
-        setContentView(R.layout.activity_settings);
+        setContentView(R.layout.main_layout);
+        ButterKnife.bind(this);
         setupViews();
-        setupClicks();
         setupPermissions();
 
     }
@@ -86,109 +77,70 @@ public class SettingsActivity extends AppCompatActivity  {
     }
 
     private void setupViews() {
-        _root = (LinearLayout) findViewById(R.id.settings_root);
-        _textColourSetting = new SettingOptionCustomView(getApplicationContext(), "Choose your text colour", R.drawable.colour_wheel);
-        _backgroundImageSetting = new SettingOptionCustomView(getApplicationContext(), "Choose your background", R.drawable.background_image);
-        _timingSetting = new SettingOptionCustomView(getApplicationContext(), "Choose your quote refresh interval", R.drawable.timing);
-        _textSizeSetting = new SettingOptionCustomView(getApplicationContext(), "Choose your text size", R.drawable.textsize);
-        _fontSetting = new SettingOptionCustomView(getApplicationContext(), "Choose your font", R.drawable.fontchoice);
-        _categorySetting = new SettingOptionCustomView(getApplicationContext(), "Choose your quote category", R.drawable.categoryicon);
-        _getAQuote = new SettingOptionCustomView(getApplicationContext(), "Get a quote!", R.drawable.categoryicon);
-        _optionsList.add(_textColourSetting);
-        _optionsList.add(_backgroundImageSetting);
-        _optionsList.add(_timingSetting);
-        _optionsList.add(_textSizeSetting);
-        _optionsList.add(_fontSetting);
-        _optionsList.add(_categorySetting);
-        if ("debug".equals(BuildConfig.BUILD_TYPE)) {
-            _optionsList.add(_getAQuote);
-        }
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, 0, 1.0f);
-        for (int i = 0; i < _optionsList.size(); i++) {
-            _optionsList.get(i).setLayoutParams(lp);
-        }
-        for (int i = 0; i < _optionsList.size(); i++) {
-            _root.addView(_optionsList.get(i));
+        if (!("debug".equals(BuildConfig.BUILD_TYPE))) {
+            _getAQuoteSetting.setVisibility(View.GONE);
         }
     }
 
-    private void setupClicks() {
-        setupTextColourClick();
-        setupBackgroundClick();
-        setupTimingClick();
-        setupTextSizeClick();
-        setupFontClick();
-        setupCategoryClick();
-        setupNextQuoteClick();
+    @OnClick(R.id.settings_option_pick_new_quote)
+    public void setupNextQuoteClick() {
+        QuoteDatabaseModel quote = QuotesToUseTableInterface.getAndRemoveFirstQuoteAndPullMoreIfNeeded();
+        String quoteText = quote == null ? "No more quotes :(" : quote.getText();
+        Log.d("asdf", "Top quote : " + quoteText);
     }
 
-    private void setupNextQuoteClick() {
-        _getAQuote.setOnClickListener(view -> {
-            QuoteDatabaseModel quote = QuotesToUseTableInterface.getAndRemoveFirstQuoteAndPullMoreIfNeeded();
-            String quoteText = quote == null ? "No more quotes :(" : quote.getText();
-            Log.d("asdf", "Top quote : " + quoteText);
+    @OnClick(R.id.settings_option_pick_category)
+    public void setupCategoryClick() {
+        CharSequence categories[] = new String[]{"Inspirational Quotes", "Love Quotes", "Sport Quotes", "Book Quotes", "Uplifting Quotes", "Philosophy Quotes"};
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(SettingsActivity.this);
+        builder.setTitle("Pick a Quote Category");
+        builder.setItems(categories, (dialog, categoryChosen) -> {
+            SchedulingManager.stopJobs(SettingsActivity.this);
+            UserPreferencesTableInterface.writeQuoteCategory(categoryChosen);
+            QuotesToUseTableInterface.clearTable();
+            ProgressDialog gettingTweetsProgress = new ProgressDialog(SettingsActivity.this);
+            gettingTweetsProgress.setMessage("Getting your new quotes...");
+            PullTweetsCallback callback = new PullTweetsCallback() {
+                @Override
+                public void start() {
+                    gettingTweetsProgress.show();
+                }
+
+                @Override
+                public void done() {
+                    gettingTweetsProgress.dismiss();
+                    MotivateMeWallpaperManager.updateWallPaperWithNewQuoteAndAddToUsedIfBackgroundIsSet(SettingsActivity.this);
+                    SchedulingManager.cancelJobsAndStart(SettingsActivity.this);
+                }
+            };
+            PullTweetsTask.pullTweetsNotSafe(new PullTweetsParams(Constants.QUOTE_CATEGORY_TWITTER_ACCOUNT_MAP.get(categoryChosen), Constants.TWEETS_TO_PULL_NORMAL_AMOUNT), callback);
         });
+        builder.show();
     }
 
-    private void setupCategoryClick() {
-        _categorySetting.setOnClickListener(view -> {
-            CharSequence categories[] = new String[]{"Inspirational Quotes", "Love Quotes", "Sport Quotes", "Book Quotes", "Uplifting Quotes", "Philosophy Quotes"};
-
-            AlertDialog.Builder builder = new AlertDialog.Builder(SettingsActivity.this);
-            builder.setTitle("Pick a Quote Category");
-            builder.setItems(categories, (dialog, categoryChosen) -> {
-                SchedulingManager.stopJobs(SettingsActivity.this);
-                UserPreferencesTableInterface.writeQuoteCategory(categoryChosen);
-                QuotesToUseTableInterface.clearTable();
-                ProgressDialog gettingTweetsProgress = new ProgressDialog(SettingsActivity.this);
-                gettingTweetsProgress.setMessage("Getting your new quotes...");
-                PullTweetsCallback callback = new PullTweetsCallback() {
-                    @Override
-                    public void start() {
-                        gettingTweetsProgress.show();
-                    }
-
-                    @Override
-                    public void done() {
-                        gettingTweetsProgress.dismiss();
-                        MotivateMeWallpaperManager.updateWallPaperWithNewQuoteAndAddToUsedIfBackgroundIsSet(SettingsActivity.this);
-                        SchedulingManager.cancelJobsAndStart(SettingsActivity.this);
-                    }
-                };
-                PullTweetsTask.pullTweetsNotSafe(new PullTweetsParams(Constants.QUOTE_CATEGORY_TWITTER_ACCOUNT_MAP.get(categoryChosen), Constants.TWEETS_TO_PULL_NORMAL_AMOUNT), callback);
-            });
-            builder.show();
-        });
-    }
-
-    private void setupFontClick() {
-        _fontSetting.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                final AlertDialog.Builder alert = new AlertDialog.Builder(SettingsActivity.this);
-                alert.setTitle("Select you Quote Font");
-                LinearLayout layout = new LinearLayout(SettingsActivity.this);
-                layout.setOrientation(LinearLayout.VERTICAL);
+    @OnClick(R.id.settings_option_pick_font)
+    public void setupFontClick() {
+        final AlertDialog.Builder alert = new AlertDialog.Builder(SettingsActivity.this);
+        alert.setTitle("Select you Quote Font");
+        LinearLayout layout = new LinearLayout(SettingsActivity.this);
+        layout.setOrientation(LinearLayout.VERTICAL);
 
 
-                alert.setView(layout);
-                alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        // Canceled.
-                    }
-                });
-                final AlertDialog alertDialog = alert.create();
-                alertDialog.show();
-                setupFontBox(layout, "Americana Quotes", "fonts/americana.ttf", alertDialog);
-                setupFontBox(layout, "Block Quotes", "fonts/block.ttf", alertDialog);
-                setupFontBox(layout, "Serif Quotes", "fonts/serif.ttf", alertDialog);
-                setupFontBox(layout, "Dancing Quotes", "fonts/dancing.ttf", alertDialog);
-                setupFontBox(layout, "Typerwriter Quotes", "fonts/typewriter.ttf", alertDialog);
-                setupFontBox(layout, "Caviar Quotes", "fonts/caviar.ttf", alertDialog);
-
-
+        alert.setView(layout);
+        alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                // Canceled.
             }
         });
+        final AlertDialog alertDialog = alert.create();
+        alertDialog.show();
+        setupFontBox(layout, "Americana Quotes", "fonts/americana.ttf", alertDialog);
+        setupFontBox(layout, "Block Quotes", "fonts/block.ttf", alertDialog);
+        setupFontBox(layout, "Serif Quotes", "fonts/serif.ttf", alertDialog);
+        setupFontBox(layout, "Dancing Quotes", "fonts/dancing.ttf", alertDialog);
+        setupFontBox(layout, "Typerwriter Quotes", "fonts/typewriter.ttf", alertDialog);
+        setupFontBox(layout, "Caviar Quotes", "fonts/caviar.ttf", alertDialog);
     }
 
     private void setupFontBox(LinearLayout layout, String name, final String font, final AlertDialog alertDialog) {
@@ -227,13 +179,9 @@ public class SettingsActivity extends AppCompatActivity  {
         });
     }
 
-    private void setupTextSizeClick() {
-        _textSizeSetting.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                showNumberPicker();
-            }
-        });
+    @OnClick(R.id.settings_option_pick_text_size)
+    public void setupTextSizeClick() {
+        showNumberPicker();
     }
 
     public void showNumberPicker() {
@@ -268,22 +216,14 @@ public class SettingsActivity extends AppCompatActivity  {
 
     }
 
-    private void setupTimingClick() {
-        _timingSetting.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                new PickerDialogFragment().show(getFragmentManager(), "dialog");
-            }
-        });
+    @OnClick(R.id.settings_option_pick_refresh)
+    public void setupTimingClick() {
+        new PickerDialogFragment().show(getFragmentManager(), "dialog");
     }
 
-    private void setupBackgroundClick() {
-        _backgroundImageSetting.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                pickImage();
-            }
-        });
+    @OnClick(R.id.settings_option_pick_background)
+    public void setupBackgroundClick() {
+        pickImage();
     }
 
     public void pickImage() {
@@ -305,17 +245,19 @@ public class SettingsActivity extends AppCompatActivity  {
         }
     }
 
-    private void setupTextColourClick() {
-        _textColourSetting.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                FragmentManager fragmentManager = getFragmentManager();
-                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                ColourPickerFragment fragment = new ColourPickerFragment();
-                fragmentTransaction.add(R.id.fragment_container, fragment);
-                fragmentTransaction.commit();
-            }
-        });
+    @OnClick(R.id.settings_option_pick_colour)
+    public void setupTextColourClick() {
+        startSettingFragment();
+    }
+
+    private void startSettingFragment() {
+        FragmentManager fragmentManager = getFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out);
+        ColourPickerFragment fragment = new ColourPickerFragment();
+        fragmentTransaction.add(R.id.fragment_container, fragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
     }
 
     private class PickerDialogFragment extends TimeDurationPickerDialogFragment {
