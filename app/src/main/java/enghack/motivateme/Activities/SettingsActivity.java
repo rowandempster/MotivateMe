@@ -26,14 +26,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 
-import java.util.ArrayList;
-
 import biz.kasual.materialnumberpicker.MaterialNumberPicker;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import enghack.motivateme.BuildConfig;
-import enghack.motivateme.CustomViews.ColourPickerFragment;
+import enghack.motivateme.Fragments.ColourPickerFragment;
 import enghack.motivateme.CustomViews.SettingOption;
 import enghack.motivateme.Database.MotivateMeDbHelper;
 import enghack.motivateme.Database.QuotesToUseTable.QuotesToUseTableInterface;
@@ -253,7 +251,7 @@ public class SettingsActivity extends AppCompatActivity {
     private void startSettingFragment() {
         FragmentManager fragmentManager = getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.setCustomAnimations(android.R.animator.fade_in, android.R.animator.fade_out);
+        fragmentTransaction.setCustomAnimations(R.animator.fragment_fade_in, R.animator.fragment_fade_out);
         ColourPickerFragment fragment = new ColourPickerFragment();
         fragmentTransaction.add(R.id.fragment_container, fragment);
         fragmentTransaction.addToBackStack(null);
