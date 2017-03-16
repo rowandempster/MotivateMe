@@ -239,7 +239,9 @@ public class SettingsActivity extends AppCompatActivity {
                 return;
             }
             UserPreferencesTableInterface.writeBackgroundUriAndRefreshWallpaper(data.getData().toString(), SettingsActivity.this);
-
+        }
+        else if(requestCode == 101 && resultCode == RESULT_OK){
+            UserPreferencesTableInterface.writeTextColourAndRefreshWallpaper(data.getIntExtra("color", Color.BLACK), this);
         }
     }
 
@@ -249,13 +251,8 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void startSettingFragment() {
-        FragmentManager fragmentManager = getFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.setCustomAnimations(R.animator.fragment_fade_in, R.animator.fragment_fade_out);
-        ColourPickerFragment fragment = new ColourPickerFragment();
-        fragmentTransaction.add(R.id.fragment_container, fragment);
-        fragmentTransaction.addToBackStack(null);
-        fragmentTransaction.commit();
+        Intent intent = new Intent(this, ColourPickerFragment.class);
+        startActivityForResult(intent, 101);
     }
 
     private class PickerDialogFragment extends TimeDurationPickerDialogFragment {
