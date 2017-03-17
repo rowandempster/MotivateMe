@@ -2,8 +2,6 @@ package enghack.motivateme.Activities;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -14,7 +12,6 @@ import android.os.Build;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -31,7 +28,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import enghack.motivateme.BuildConfig;
-import enghack.motivateme.Fragments.ColourPickerFragment;
 import enghack.motivateme.CustomViews.SettingOption;
 import enghack.motivateme.Database.MotivateMeDbHelper;
 import enghack.motivateme.Database.QuotesToUseTable.QuotesToUseTableInterface;
@@ -48,7 +44,9 @@ import enghack.motivateme.Util.UserFontSize;
 import mobi.upod.timedurationpicker.TimeDurationPicker;
 import mobi.upod.timedurationpicker.TimeDurationPickerDialogFragment;
 
-public class SettingsActivity extends AppCompatActivity {
+public class SettingsActivity extends Activity {
+    public static final int CHOOSE_BACKGROUND_REQUEST_CODE = 99;
+    public static final int CHOOSE_TEXT_COLOUR_REQUEST_CODE = 101;
     @BindView(R.id.settings_option_pick_new_quote)
     SettingOption _getAQuoteSetting;
 
@@ -58,7 +56,7 @@ public class SettingsActivity extends AppCompatActivity {
         MotivateMeDbHelper.openHelper(this);
         PullTweetsTask.pullTweetsIfNeeded(MotivateMeDbHelper.getInstance().getReadableDatabase(), new PullTweetsParams(Constants.QUOTE_CATEGORY_TWITTER_ACCOUNT_MAP.get(0), Constants.TWEETS_TO_PULL_NORMAL_AMOUNT));
 
-        setContentView(R.layout.main_layout);
+        setContentView(R.layout.settings_activity_layout);
         ButterKnife.bind(this);
         setupViews();
         setupPermissions();
@@ -216,7 +214,9 @@ public class SettingsActivity extends AppCompatActivity {
 
     @OnClick(R.id.settings_option_pick_refresh)
     public void setupTimingClick() {
-        new PickerDialogFragment().show(getFragmentManager(), "dialog");
+//        new PickerDialogFragment().show(getFragmentManager(), "dialog");
+        Intent intent = new Intent(this, RefreshIntervalPickerActivity.class);
+        startActivity(intent);
     }
 
     @OnClick(R.id.settings_option_pick_background)
@@ -227,32 +227,32 @@ public class SettingsActivity extends AppCompatActivity {
     public void pickImage() {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("image/*");
-        startActivityForResult(intent, 99);
+        startActivityForResult(intent, CHOOSE_BACKGROUND_REQUEST_CODE);
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 99 && resultCode == Activity.RESULT_OK) {
+        if (requestCode == CHOOSE_BACKGROUND_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
             if (data == null) {
                 //Display an error
                 return;
             }
             UserPreferencesTableInterface.writeBackgroundUriAndRefreshWallpaper(data.getData().toString(), SettingsActivity.this);
         }
-        else if(requestCode == 101 && resultCode == RESULT_OK){
+        else if(requestCode == CHOOSE_TEXT_COLOUR_REQUEST_CODE && resultCode == RESULT_OK){
             UserPreferencesTableInterface.writeTextColourAndRefreshWallpaper(data.getIntExtra("color", Color.BLACK), this);
         }
     }
 
     @OnClick(R.id.settings_option_pick_colour)
     public void setupTextColourClick() {
-        startSettingFragment();
+        startColourPickerActivity();
     }
 
-    private void startSettingFragment() {
-        Intent intent = new Intent(this, ColourPickerFragment.class);
-        startActivityForResult(intent, 101);
+    private void startColourPickerActivity() {
+        Intent intent = new Intent(this, ColourPickerActivity.class);
+        startActivityForResult(intent, CHOOSE_TEXT_COLOUR_REQUEST_CODE);
     }
 
     private class PickerDialogFragment extends TimeDurationPickerDialogFragment {
