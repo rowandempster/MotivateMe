@@ -3,16 +3,18 @@ package enghack.motivateme.Activities;
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.util.Log;
 import android.widget.Button;
-import android.widget.TextView;
 
 import com.github.shchurov.horizontalwheelview.HorizontalWheelView;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import enghack.motivateme.CustomViews.LabeledButton;
+import enghack.motivateme.CustomViews.refresh_interval_activity.RefreshIntervalPickerLabeledButton;
 import enghack.motivateme.R;
 
 /**
@@ -22,14 +24,18 @@ import enghack.motivateme.R;
 public class RefreshIntervalPickerActivity extends Activity {
     @BindView(R.id.time_seeker)
     HorizontalWheelView _seeker;
-    @BindView(R.id.time_seeker_hour_progress)
-    Button _hourProgress;
-    @BindView(R.id.time_seeker_minutes_progress)
-    Button _minuteProgress;
+    @BindView(R.id.refresh_time_activity_days)
+    RefreshIntervalPickerLabeledButton _days;
+    @BindView(R.id.refresh_time_activity_hours)
+    RefreshIntervalPickerLabeledButton _hours;
+    @BindView(R.id.refresh_time_activity_minutes)
+    RefreshIntervalPickerLabeledButton _minutes;
+    @BindView(R.id.refresh_time_activity_seconds)
+    RefreshIntervalPickerLabeledButton _seconds;
 
-    private Button _selectedButton;
+    private RefreshIntervalPickerLabeledButton _selectedButton;
 
-    private ArrayList<Button> _buttons = new ArrayList<>();
+    private List<RefreshIntervalPickerLabeledButton> _boxes;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -40,31 +46,49 @@ public class RefreshIntervalPickerActivity extends Activity {
     }
 
     private void initView() {
-        setupSeeker();
-        _buttons.add(_hourProgress);
-        _buttons.add(_minuteProgress);
-        updateSelectedButton(_hourProgress);
+        _boxes = new ArrayList<>(Arrays.asList(_days, _hours, _minutes, _seconds));
+        initTimeBoxes(1000*60*60*10);
+        initSeeker();
+        setSelection(_hours);
     }
 
-    private void updateSelectedButton(Button toSelect){
-        _selectedButton = toSelect;
-        for(Button button : _buttons){
-            if(button != _selectedButton){
-                button.setPressed(false);
+    private void initSeeker() {
+        _seeker.setOnlyPositiveValues(true);
+        _seeker.setEndLock(true);
+        _seeker.setSnapToMarks(true);
+        _seeker.setShowActiveRange(false);
+        _seeker.setListener(new MyListener());
+    }
+
+    private void setSelection(RefreshIntervalPickerLabeledButton box) {
+        _selectedButton = box;
+        selectBox(box);
+        updateSeeker(box);
+    }
+
+    private void selectBox(RefreshIntervalPickerLabeledButton box) {
+        for(RefreshIntervalPickerLabeledButton forBox : _boxes){
+            if(!forBox.equals(box)){
+                forBox.setPressedButton(false);
             }
             else{
-                button.setPressed(true);
+                forBox.setPressedButton(true);
             }
         }
     }
 
-    private void setupSeeker(int marks) {
-        _seeker.setOnlyPositiveValues(true);
-        _seeker.setEndLock(true);
-        _seeker.setMarksCount(24);
-        _seeker.setSnapToMarks(true);
-        _seeker.setShowActiveRange(false);
-        _seeker.setListener(new MyListener());
+    private void initTimeBoxes(long userRefreshTime) {
+        for(RefreshIntervalPickerLabeledButton box : _boxes){
+            userRefreshTime = box.initValue(userRefreshTime);
+            box.setOnClickListener(view -> {
+                setSelection((RefreshIntervalPickerLabeledButton) view);
+            });
+        }
+    }
+
+    private void updateSeeker(RefreshIntervalPickerLabeledButton box) {
+        _seeker.setMarksCount(box.getNumMarks());
+        _seeker.setDegreesAngle(box.getAngle());
     }
 
     private class MyListener extends HorizontalWheelView.Listener {
@@ -73,10 +97,10 @@ public class RefreshIntervalPickerActivity extends Activity {
         @Override
         public void onRotationChanged(double radians) {
             super.onRotationChanged(radians);
-            int newProgress = (int) Math.round(24 * _seeker.getCompleteTurnFraction());
+            int newProgress = (int) Math.round(_selectedButton.getNumMarks() * _seeker.getCompleteTurnFraction());
             if (_currProgress == newProgress) return;
             _currProgress = newProgress;
-            _selectedButton.setText(String.valueOf(_currProgress));
+            _selectedButton.setMark(_currProgress);
 
 
         }

@@ -52,4 +52,9 @@
         <attr name="circle_fill" format="color"/>
     </declare-styleable>
 
+    <declare-styleable name="LabeledButton">
+        <attr name="label_text" format="string"/>
+        <attr name="button_text" format="string"/>
+    </declare-styleable>
+
 </resources>

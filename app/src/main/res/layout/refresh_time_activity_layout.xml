@@ -7,26 +7,36 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
+        android:layout_height="100dp"
         android:layout_above="@+id/time_seeker"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="20dp">
+        android:layout_marginBottom="20dp"
+        android:orientation="horizontal">
 
-        <Button
-            android:id="@+id/time_seeker_hour_progress"
+        <enghack.motivateme.CustomViews.refresh_interval_activity.RefreshIntervalDays
+            android:id="@+id/refresh_time_activity_days"
             android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:text="Hours"
-            android:textSize="30sp" />
-        <Button
-            android:id="@+id/time_seeker_minutes_progress"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+
+        <enghack.motivateme.CustomViews.refresh_interval_activity.RefreshIntervalHours
+            android:id="@+id/refresh_time_activity_hours"
             android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:text="Minutes"
-            android:textSize="30sp" />
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+
+        <enghack.motivateme.CustomViews.refresh_interval_activity.RefreshIntervalPickerMinutes
+            android:id="@+id/refresh_time_activity_minutes"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+
+        <enghack.motivateme.CustomViews.refresh_interval_activity.RefreshIntervalPickerSeconds
+            android:id="@+id/refresh_time_activity_seconds"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+
     </LinearLayout>
 
     <com.github.shchurov.horizontalwheelview.HorizontalWheelView
