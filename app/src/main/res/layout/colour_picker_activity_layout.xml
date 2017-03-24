@@ -17,7 +17,7 @@
         android:paddingLeft="15dp"
         android:paddingRight="15dp"
         android:text="@string/pick_your_new_quote_colour"
-        android:textColor="@color/primary_text"
+        android:textColor="@color/primaryText"
         android:textSize="30dp"
         app:roboto_font="Light" />
 

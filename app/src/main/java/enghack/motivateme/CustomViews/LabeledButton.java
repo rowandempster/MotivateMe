@@ -64,8 +64,7 @@ public class LabeledButton extends LinearLayout {
     }
 
     public void setButtonText(String text) {
-        _button.setTextOff(text);
-        _button.setTextOn(text);
+        _button.setText(text);
     }
 
     public void setPressedButton(boolean pressed) {
