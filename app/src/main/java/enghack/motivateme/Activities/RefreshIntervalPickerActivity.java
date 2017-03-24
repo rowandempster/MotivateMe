@@ -1,6 +1,7 @@
 package enghack.motivateme.Activities;
 
 import android.app.Activity;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.widget.Button;
@@ -57,6 +58,8 @@ public class RefreshIntervalPickerActivity extends Activity {
         _seeker.setEndLock(true);
         _seeker.setSnapToMarks(true);
         _seeker.setShowActiveRange(false);
+        _seeker.setActiveColor(getResources().getColor(R.color.colorPrimaryDark));
+        _seeker.setNormaColor(getResources().getColor(R.color.colorAccent));
         _seeker.setListener(new MyListener());
     }
 
