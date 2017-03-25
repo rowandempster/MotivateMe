@@ -47,6 +47,8 @@ import mobi.upod.timedurationpicker.TimeDurationPickerDialogFragment;
 public class SettingsActivity extends Activity {
     public static final int CHOOSE_BACKGROUND_REQUEST_CODE = 99;
     public static final int CHOOSE_TEXT_COLOUR_REQUEST_CODE = 101;
+    public static final int CHOOSE_REFRESH_INTERVAL_REQUEST_CODE = 102;
+
     @BindView(R.id.settings_option_pick_new_quote)
     SettingOption _getAQuoteSetting;
 
@@ -214,9 +216,8 @@ public class SettingsActivity extends Activity {
 
     @OnClick(R.id.settings_option_pick_refresh)
     public void setupTimingClick() {
-//        new PickerDialogFragment().show(getFragmentManager(), "dialog");
         Intent intent = new Intent(this, RefreshIntervalPickerActivity.class);
-        startActivity(intent);
+        startActivityForResult(intent, CHOOSE_REFRESH_INTERVAL_REQUEST_CODE);
     }
 
     @OnClick(R.id.settings_option_pick_background)
@@ -241,7 +242,16 @@ public class SettingsActivity extends Activity {
             UserPreferencesTableInterface.writeBackgroundUriAndRefreshWallpaper(data.getData().toString(), SettingsActivity.this);
         }
         else if(requestCode == CHOOSE_TEXT_COLOUR_REQUEST_CODE && resultCode == RESULT_OK){
-            UserPreferencesTableInterface.writeTextColourAndRefreshWallpaper(data.getIntExtra("color", Color.BLACK), this);
+            int result = data.getIntExtra(ColourPickerActivity.COLOUR_PICKED_EXTRA, 0);
+            if(result != 0) {
+                UserPreferencesTableInterface.writeTextColourAndRefreshWallpaper(result, this);
+            }
+        }
+        else if(requestCode == CHOOSE_REFRESH_INTERVAL_REQUEST_CODE && resultCode == RESULT_OK){
+            long result = data.getLongExtra(RefreshIntervalPickerActivity.TIME_PICKED_EXTRA, -1);
+            if(result != -1) {
+                UserPreferencesTableInterface.writeRefreshIntervalAndRefreshWallpaper(result, this);
+            }
         }
     }
 

@@ -10,10 +10,9 @@
 
     <enghack.motivateme.CustomViews.MaterialDesignTextView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp"
-        android:layout_marginTop="10dp"
-        android:gravity="center_horizontal"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center"
         android:paddingLeft="15dp"
         android:paddingRight="15dp"
         android:text="@string/pick_your_new_quote_colour"
@@ -21,19 +20,22 @@
         android:textSize="30dp"
         app:roboto_font="Light" />
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
+        android:layout_weight="3"
         android:background="#EEEEEE"
         android:elevation="10dp"
+        android:gravity="center"
         android:orientation="vertical">
 
         <com.flask.colorpicker.ColorPickerView
             android:id="@+id/color_picker_view"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_above="@+id/v_lightness_slider"
             app:alphaSlider="false"
             app:density="12"
             app:lightnessSlider="true"
@@ -43,45 +45,12 @@
         <com.flask.colorpicker.slider.LightnessSlider
             android:id="@+id/v_lightness_slider"
             android:layout_width="match_parent"
-            android:layout_height="48dp" />
+            android:layout_height="20dp"
+            android:layout_alignParentBottom="true"
+            android:layout_margin="10dp" />
 
-    </LinearLayout>
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_centerVertical="true">
-
-            <enghack.motivateme.CustomViews.MotivateMeButton
-                android:id="@+id/colour_picker_activity_back_buttton"
-                android:layout_width="0dp"
-                android:layout_height="100dp"
-                android:layout_weight="1"
-                style="@style/Base.Widget.AppCompat.Button.Colored"
-                android:layout_marginLeft="10dp"
-                android:text="Back"/>
-
-            <View
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="2"/>
-
-            <Button
-                android:id="@+id/color_picked_button"
-                android:layout_width="0dp"
-                android:layout_height="100dp"
-                android:layout_marginRight="10dp"
-                android:layout_weight="1"
-                android:text="Confirm" />
-
-        </LinearLayout>
     </RelativeLayout>
 
+    <include layout="@layout/back_or_confirm_layout" />
 
 </LinearLayout>

@@ -34,6 +34,7 @@ public class SettingOption extends LinearLayout {
         ButterKnife.bind(this, v);
         _titleTextView.setText(_label);
         _image.setImageDrawable(_drawable);
+
     }
 
     public SettingOption(Context context, AttributeSet attrs) {

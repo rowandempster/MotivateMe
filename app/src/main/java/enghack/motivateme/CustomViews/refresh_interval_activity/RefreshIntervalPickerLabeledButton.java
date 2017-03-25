@@ -42,7 +42,7 @@ public abstract class RefreshIntervalPickerLabeledButton extends LabeledButton {
         return userRefreshInterval - getMillisInTimeUnit()*days;
     };
 
-    protected abstract long getMillisInTimeUnit();
+    public abstract long getMillisInTimeUnit();
 
     public double getAngle() {
         return (getMark()/((double) getNumMarks()))*360;

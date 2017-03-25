@@ -13,6 +13,7 @@ import com.flask.colorpicker.slider.LightnessSlider;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import enghack.motivateme.CustomViews.MotivateMeButton;
 import enghack.motivateme.Database.UserPreferencesTable.UserPreferencesTableInterface;
 import enghack.motivateme.R;
 
@@ -22,12 +23,14 @@ import enghack.motivateme.R;
 
 public class ColourPickerActivity extends Activity {
 
+    public static final String COLOUR_PICKED_EXTRA = "colour";
+
     @BindView(R.id.color_picker_view)
     ColorPickerView _pickerView;
     @BindView(R.id.v_lightness_slider)
     LightnessSlider _lightnessSlider;
-    @BindView(R.id.color_picked_button)
-    Button _confirmButton;
+    @BindView(R.id.confirm_button)
+    MotivateMeButton _confirmButton;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -52,15 +55,15 @@ public class ColourPickerActivity extends Activity {
         });
     }
 
-    @OnClick(R.id.color_picked_button)
+    @OnClick(R.id.confirm_button)
     public void writeColour(View v) {
         Intent passBack = new Intent();
-        passBack.putExtra("color", _pickerView.getSelectedColor());
+        passBack.putExtra(COLOUR_PICKED_EXTRA, _pickerView.getSelectedColor());
         setResult(RESULT_OK, passBack);
         finish();
     }
 
-    @OnClick(R.id.colour_picker_activity_back_buttton)
+    @OnClick(R.id.back_button)
     public void back(View view){
         finish();
     }

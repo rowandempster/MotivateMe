@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -7,69 +7,63 @@
 
     <enghack.motivateme.CustomViews.MaterialDesignTextView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textColor="@color/primaryText"
-        android:layout_marginTop="20dp"
-        app:roboto_font="Light"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:gravity="center"
+        android:text="Pick your new refresh interval!"
+        android:textColor="@color/primaryText"
         android:textSize="30dp"
-        android:text="Pick your new refresh interval!"/>
+        app:roboto_font="Light" />
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/refresh_interval_confirm_button"
-        android:elevation="10dp"
+        android:layout_height="0dp"
         android:background="@color/colorPrimaryLight"
+        android:layout_weight="3"
+        android:elevation="10dp"
         android:orientation="vertical">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:orientation="horizontal">
-
-        <enghack.motivateme.CustomViews.refresh_interval_activity.RefreshIntervalDays
-            android:id="@+id/refresh_time_activity_days"
-            android:layout_width="0dp"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="1" />
+            android:layout_above="@+id/time_seeker"
+            android:orientation="horizontal">
 
-        <enghack.motivateme.CustomViews.refresh_interval_activity.RefreshIntervalHours
-            android:id="@+id/refresh_time_activity_hours"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1" />
+            <enghack.motivateme.CustomViews.refresh_interval_activity.RefreshIntervalDays
+                android:id="@+id/refresh_time_activity_days"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1" />
 
-        <enghack.motivateme.CustomViews.refresh_interval_activity.RefreshIntervalPickerMinutes
-            android:id="@+id/refresh_time_activity_minutes"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1" />
+            <enghack.motivateme.CustomViews.refresh_interval_activity.RefreshIntervalHours
+                android:id="@+id/refresh_time_activity_hours"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1" />
 
-        <enghack.motivateme.CustomViews.refresh_interval_activity.RefreshIntervalPickerSeconds
-            android:id="@+id/refresh_time_activity_seconds"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1" />
+            <enghack.motivateme.CustomViews.refresh_interval_activity.RefreshIntervalPickerMinutes
+                android:id="@+id/refresh_time_activity_minutes"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1" />
 
-    </LinearLayout>
+            <enghack.motivateme.CustomViews.refresh_interval_activity.RefreshIntervalPickerSeconds
+                android:id="@+id/refresh_time_activity_seconds"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1" />
 
-    <com.github.shchurov.horizontalwheelview.HorizontalWheelView
-        android:id="@+id/time_seeker"
-        android:layout_width="match_parent"
-        android:layout_height="200dp"
-        android:background="@color/colorPrimaryLight"
-        android:layout_above="@+id/refresh_interval_confirm_button"/>
+        </LinearLayout>
 
-    </LinearLayout>
+        <com.github.shchurov.horizontalwheelview.HorizontalWheelView
+            android:id="@+id/time_seeker"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:layout_alignParentBottom="true"
+            android:background="@color/colorPrimaryLight" />
 
-    <enghack.motivateme.CustomViews.MotivateMeButton
-        android:id="@+id/refresh_interval_confirm_button"
-        style="@style/Base.Widget.AppCompat.Button.Colored"
-        android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:layout_margin="20dp"
-        android:text="Confirm"
-        android:textSize="30dp"
-        android:layout_alignParentBottom="true" />
-</RelativeLayout>
+    </RelativeLayout>
+
+    <include layout="@layout/back_or_confirm_layout" />
+
+</LinearLayout>

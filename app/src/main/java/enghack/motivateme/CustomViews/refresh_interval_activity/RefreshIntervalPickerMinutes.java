@@ -28,7 +28,7 @@ class RefreshIntervalPickerMinutes extends RefreshIntervalPickerLabeledButton {
     }
 
     @Override
-    protected long getMillisInTimeUnit() {
+    public long getMillisInTimeUnit() {
         return 1000*60;
     }
 }
