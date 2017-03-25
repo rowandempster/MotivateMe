@@ -119,62 +119,64 @@ public class SettingsActivity extends Activity {
 
     @OnClick(R.id.settings_option_pick_font)
     public void setupFontClick() {
-        final AlertDialog.Builder alert = new AlertDialog.Builder(SettingsActivity.this);
-        alert.setTitle("Select you Quote Font");
-        LinearLayout layout = new LinearLayout(SettingsActivity.this);
-        layout.setOrientation(LinearLayout.VERTICAL);
-
-
-        alert.setView(layout);
-        alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                // Canceled.
-            }
-        });
-        final AlertDialog alertDialog = alert.create();
-        alertDialog.show();
-        setupFontBox(layout, "Americana Quotes", "fonts/americana.ttf", alertDialog);
-        setupFontBox(layout, "Block Quotes", "fonts/block.ttf", alertDialog);
-        setupFontBox(layout, "Serif Quotes", "fonts/serif.ttf", alertDialog);
-        setupFontBox(layout, "Dancing Quotes", "fonts/dancing.ttf", alertDialog);
-        setupFontBox(layout, "Typerwriter Quotes", "fonts/typewriter.ttf", alertDialog);
-        setupFontBox(layout, "Caviar Quotes", "fonts/caviar.ttf", alertDialog);
-    }
-
-    private void setupFontBox(LinearLayout layout, String name, final String font, final AlertDialog alertDialog) {
-        TextView tv = new TextView(SettingsActivity.this);
-        tv.setPadding(0, 50, 0, 50);
-        tv.setText(name);
-        tv.setTypeface(Typeface.createFromAsset(SettingsActivity.this.getAssets(), font));
-        tv.setTextSize(30);
-        if (font.equals("fonts/americana.ttf")) {
-            tv.setBackgroundDrawable(getDrawable(R.drawable.border));
-        } else {
-            tv.setBackgroundDrawable(getDrawable(R.drawable.border_bottom_only));
-        }
-        tv.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        tv.setGravity(Gravity.CENTER);
-        layout.addView(tv);
-        tv.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                alertDialog.dismiss();
-
-                DisplayMetrics dm = new DisplayMetrics();
-                SettingsActivity.this.getWindowManager().getDefaultDisplay().getMetrics(dm);
-
-                final int oldMaxFontSize = UserFontSize.getMaxFontSize(dm.widthPixels,
-                        dm.heightPixels, SettingsActivity.this.getApplicationContext());
-
-                UserPreferencesTableInterface.writeTextFontAndRefreshWallpaper(font, SettingsActivity.this);
-                final int maxFontSize = UserFontSize.getMaxFontSize(dm.widthPixels,
-                        dm.heightPixels, SettingsActivity.this.getApplicationContext());
-                if (oldMaxFontSize > maxFontSize) {
-                    UserPreferencesTableInterface.writeTextSizeAndRefreshWallpaper(maxFontSize, SettingsActivity.this);
-                }
-
-            }
-        });
+        Intent intent = new Intent(this, FontPickerActivity.class);
+        startActivity(intent);
+//        final AlertDialog.Builder alert = new AlertDialog.Builder(SettingsActivity.this);
+//        alert.setTitle("Select you Quote Font");
+//        LinearLayout layout = new LinearLayout(SettingsActivity.this);
+//        layout.setOrientation(LinearLayout.VERTICAL);
+//
+//
+//        alert.setView(layout);
+//        alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+//            public void onClick(DialogInterface dialog, int whichButton) {
+//                // Canceled.
+//            }
+//        });
+//        final AlertDialog alertDialog = alert.create();
+//        alertDialog.show();
+//        setupFontBox(layout, "Americana Quotes", "fonts/americana.ttf", alertDialog);
+//        setupFontBox(layout, "Block Quotes", "fonts/block.ttf", alertDialog);
+//        setupFontBox(layout, "Serif Quotes", "fonts/serif.ttf", alertDialog);
+//        setupFontBox(layout, "Dancing Quotes", "fonts/dancing.ttf", alertDialog);
+//        setupFontBox(layout, "Typerwriter Quotes", "fonts/typewriter.ttf", alertDialog);
+//        setupFontBox(layout, "Caviar Quotes", "fonts/caviar.ttf", alertDialog);
+//    }
+//
+//    private void setupFontBox(LinearLayout layout, String name, final String font, final AlertDialog alertDialog) {
+//        TextView tv = new TextView(SettingsActivity.this);
+//        tv.setPadding(0, 50, 0, 50);
+//        tv.setText(name);
+//        tv.setTypeface(Typeface.createFromAsset(SettingsActivity.this.getAssets(), font));
+//        tv.setTextSize(30);
+//        if (font.equals("fonts/americana.ttf")) {
+//            tv.setBackgroundDrawable(getDrawable(R.drawable.border));
+//        } else {
+//            tv.setBackgroundDrawable(getDrawable(R.drawable.border_bottom_only));
+//        }
+//        tv.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+//        tv.setGravity(Gravity.CENTER);
+//        layout.addView(tv);
+//        tv.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                alertDialog.dismiss();
+//
+//                DisplayMetrics dm = new DisplayMetrics();
+//                SettingsActivity.this.getWindowManager().getDefaultDisplay().getMetrics(dm);
+//
+//                final int oldMaxFontSize = UserFontSize.getMaxFontSize(dm.widthPixels,
+//                        dm.heightPixels, SettingsActivity.this.getApplicationContext());
+//
+//                UserPreferencesTableInterface.writeTextFontAndRefreshWallpaper(font, SettingsActivity.this);
+//                final int maxFontSize = UserFontSize.getMaxFontSize(dm.widthPixels,
+//                        dm.heightPixels, SettingsActivity.this.getApplicationContext());
+//                if (oldMaxFontSize > maxFontSize) {
+//                    UserPreferencesTableInterface.writeTextSizeAndRefreshWallpaper(maxFontSize, SettingsActivity.this);
+//                }
+//
+//            }
+//        });
     }
 
     @OnClick(R.id.settings_option_pick_text_size)

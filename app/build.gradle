@@ -61,4 +61,5 @@ dependencies {
     compile 'biz.kasual:materialnumberpicker:1.2.1'
     compile 'com.facebook.stetho:stetho:1.1.1'
     compile 'com.github.shchurov:horizontalwheelview:0.9.5'
+    compile 'fr.avianey.com.viewpagerindicator:library:2.4.1.1@aar'
 }
