@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:background="@drawable/labeled_button_background"
+    android:background="@drawable/color_primary_border"
     android:layout_height="match_parent">
     <enghack.motivateme.CustomViews.MaterialDesignTextView
         android:id="@+id/labeled_button_label_text_view"

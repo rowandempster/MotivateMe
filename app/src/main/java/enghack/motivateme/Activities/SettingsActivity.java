@@ -152,7 +152,7 @@ public class SettingsActivity extends Activity {
 //        if (font.equals("fonts/americana.ttf")) {
 //            tv.setBackgroundDrawable(getDrawable(R.drawable.border));
 //        } else {
-//            tv.setBackgroundDrawable(getDrawable(R.drawable.border_bottom_only));
+//            tv.setBackgroundDrawable(getDrawable(R.drawable.primary_light_border_bottom_only));
 //        }
 //        tv.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 //        tv.setGravity(Gravity.CENTER);
