@@ -20,12 +20,21 @@ import enghack.motivateme.R;
 
 public class FontPagerAdapter extends PagerAdapter implements IconPagerAdapter {
 
+    public int getPositionFromAsset(String path) {
+        for (int i = 0; i < FontPagerEnum.values().length; i++) {
+            if (FontPagerEnum.values()[i].getPath().equals(path)) {
+                return i;
+            }
+        }
+        return 0;
+    }
+
     private enum FontPagerEnum {
+        SERIF("Serif", "fonts/serif.ttf"),
         AMERICANA("Americana", "fonts/americana.ttf"),
         BLOCK("Block", "fonts/block.ttf"),
         CAVIAR("Caviar", "fonts/caviar.ttf"),
         DANCING("Dancing", "fonts/dancing.ttf"),
-        SERIF("Serif", "fonts/serif.ttf"),
         TYPEWRITER("Typewriter", "fonts/typewriter.ttf");
 
         private String _name;
@@ -45,9 +54,14 @@ public class FontPagerAdapter extends PagerAdapter implements IconPagerAdapter {
         }
     }
 
-    public Typeface getTypefaceFromPosition(int pos){
+    public Typeface getTypefaceFromPosition(int pos) {
         FontPagerEnum[] fonts = FontPagerEnum.values();
         return Typeface.createFromAsset(_assets, fonts[pos].getPath());
+    }
+
+    public String getAssetPathFromPosition(int pos) {
+        FontPagerEnum[] fonts = FontPagerEnum.values();
+        return fonts[pos].getPath();
     }
 
     private AssetManager _assets;

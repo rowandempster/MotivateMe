@@ -52,7 +52,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
             android:gravity="center"
-            android:text="Choose your text weight!"
+            android:text="Choose your text style!"
             android:textSize="25sp"
             app:roboto_font="Light" />
 
@@ -131,32 +131,30 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1">
-
-        <enghack.motivateme.CustomViews.MaterialDesignTextView
-            android:id="@+id/font_picker_preview_instructions"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:gravity="center"
-            android:text="Here is a preview:"
-            android:textSize="25dp"
-            app:roboto_font="Light" />
+        android:layout_weight="1"
+        android:background="@drawable/primary_light_border_bottom_only">
 
         <TextView
             android:id="@+id/font_picker_preview"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/font_picker_preview_instructions"
             android:layout_centerInParent="true"
-            android:background="@drawable/color_primary_light_border"
             android:gravity="center"
             android:includeFontPadding="false"
-            android:padding="10dp"
             android:text="Preview"
             android:textSize="25dp" />
 
     </RelativeLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.5"
+        android:orientation="vertical">
+
+        <include layout="@layout/back_or_confirm_layout" />
+
+    </LinearLayout>
 
 
 </LinearLayout>

@@ -9,15 +9,27 @@ public class UserPreferencesModel {
     private int textColour;
     private String backgroundUri;
     private String textFont;
+    private int textSize;
+
+    public int getTextStyle() {
+        return textStyle;
+    }
+
+    public void setTextStyle(int textStyle) {
+        this.textStyle = textStyle;
+    }
+
+    private int textStyle;
     private String quoteCategory;
 
-    public UserPreferencesModel(long refreshInterval, int textColour, String backgroundUri, String textFont, String quoteCategory, int textSize) {
+    public UserPreferencesModel(long refreshInterval, int textColour, String backgroundUri, String textFont, int textSize, int textStyle, String quoteCategory) {
         this.refreshInterval = refreshInterval;
         this.textColour = textColour;
         this.backgroundUri = backgroundUri;
         this.textFont = textFont;
-        this.quoteCategory = quoteCategory;
         this.textSize = textSize;
+        this.textStyle = textStyle;
+        this.quoteCategory = quoteCategory;
     }
 
     public int getTextSize() {
@@ -69,6 +81,5 @@ public class UserPreferencesModel {
         this.refreshInterval = refreshInterval;
     }
 
-    private int textSize;
 
 }

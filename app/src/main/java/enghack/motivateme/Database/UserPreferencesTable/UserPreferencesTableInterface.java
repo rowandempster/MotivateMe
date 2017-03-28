@@ -15,6 +15,7 @@ import static enghack.motivateme.Database.UserPreferencesTable.UserPreferencesDe
 import static enghack.motivateme.Database.UserPreferencesTable.UserPreferencesDefaults.TEXT_COLOUR;
 import static enghack.motivateme.Database.UserPreferencesTable.UserPreferencesDefaults.TEXT_FONT;
 import static enghack.motivateme.Database.UserPreferencesTable.UserPreferencesDefaults.TEXT_SIZE;
+import static enghack.motivateme.Database.UserPreferencesTable.UserPreferencesDefaults.TEXT_STYLE;
 
 /**
  * Created by rowandempster on 2/20/17.
@@ -40,6 +41,13 @@ public class UserPreferencesTableInterface {
         if (MotivateMeDbHelper.getInstance() != null) {
             MotivateMeDatabaseUtils.replaceString(MotivateMeDbHelper.getInstance().getWritableDatabase(), UserPreferencesTableContract.TABLE_NAME,
                     UserPreferencesTableContract.COLUMN_NAME_TEXT_FONT, font);
+        }
+    }
+
+    public static void writeTextStyle(int style) {
+        if (MotivateMeDbHelper.getInstance() != null) {
+            MotivateMeDatabaseUtils.replaceInt(MotivateMeDbHelper.getInstance().getWritableDatabase(), UserPreferencesTableContract.TABLE_NAME,
+                    UserPreferencesTableContract.COLUMN_NAME_TEXT_STYLE, style);
         }
     }
 
@@ -122,6 +130,16 @@ public class UserPreferencesTableInterface {
         }
     }
 
+    public static int readTextStyle() {
+        if (MotivateMeDbHelper.getInstance() != null) {
+            int readStyle = MotivateMeDatabaseUtils.readFirstInt(MotivateMeDbHelper.getInstance().getReadableDatabase(), UserPreferencesTableContract.TABLE_NAME,
+                    UserPreferencesTableContract._ID, UserPreferencesTableContract.COLUMN_NAME_TEXT_STYLE);
+            return readStyle == 0 ? TEXT_STYLE : readStyle;
+        } else {
+            return TEXT_STYLE;
+        }
+    }
+
     public static String readQuoteCategory() {
         if (MotivateMeDbHelper.getInstance() != null) {
             int cat = MotivateMeDatabaseUtils.readFirstInt(MotivateMeDbHelper.getInstance().getReadableDatabase(), UserPreferencesTableContract.TABLE_NAME,
@@ -173,7 +191,7 @@ public class UserPreferencesTableInterface {
     }
 
     public static UserPreferencesModel readUserPreferences() {
-        UserPreferencesModel defaultModel = new UserPreferencesModel(REFRESH_INTERVAL, TEXT_COLOUR, BACKGROUND_URI, TEXT_FONT, QUOTE_CATEGORY, TEXT_SIZE);
+        UserPreferencesModel defaultModel = new UserPreferencesModel(REFRESH_INTERVAL, TEXT_COLOUR, BACKGROUND_URI, TEXT_FONT, TEXT_SIZE, TEXT_STYLE, QUOTE_CATEGORY);
 
         if (MotivateMeDbHelper.getInstance() != null) {
 
@@ -188,12 +206,19 @@ public class UserPreferencesTableInterface {
             String textFont = getTextFont(userPrefsCursor);
             String quoteCategory = getQuoteCategory(userPrefsCursor);
             int textSize = getTextSize(userPrefsCursor);
+            int textStyle = getTextStyle(userPrefsCursor);
 
             userPrefsCursor.close();
 
-            return new UserPreferencesModel(refreshInterval, textColour, backgroundUri, textFont, quoteCategory, textSize);
+            return new UserPreferencesModel(refreshInterval, textColour, backgroundUri, textFont, textSize, textStyle, quoteCategory);
         }
         return defaultModel;
+    }
+
+    private static int getTextStyle(Cursor row) {
+        int textStyle = row.getInt(row.getColumnIndex(UserPreferencesTableContract.COLUMN_NAME_TEXT_STYLE));
+        textStyle = textStyle == 0 ? TEXT_STYLE : textStyle;
+        return textStyle;
     }
 
     private static int getTextSize(Cursor row) {

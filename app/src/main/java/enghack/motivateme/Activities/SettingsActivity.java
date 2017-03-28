@@ -34,6 +34,7 @@ import enghack.motivateme.Database.QuotesToUseTable.QuotesToUseTableInterface;
 import enghack.motivateme.Database.UserPreferencesTable.UserPreferencesTableInterface;
 import enghack.motivateme.Managers.MotivateMeWallpaperManager;
 import enghack.motivateme.Managers.SchedulingManager;
+import enghack.motivateme.Models.FontPickerResult;
 import enghack.motivateme.Models.QuoteDatabaseModel;
 import enghack.motivateme.R;
 import enghack.motivateme.Tasks.PullTweets.PullTweetsCallback;
@@ -48,6 +49,7 @@ public class SettingsActivity extends Activity {
     public static final int CHOOSE_BACKGROUND_REQUEST_CODE = 99;
     public static final int CHOOSE_TEXT_COLOUR_REQUEST_CODE = 101;
     public static final int CHOOSE_REFRESH_INTERVAL_REQUEST_CODE = 102;
+    public static final int CHOOSE_FONT_REQUEST_CODE = 103;
 
     @BindView(R.id.settings_option_pick_new_quote)
     SettingOption _getAQuoteSetting;
@@ -120,7 +122,7 @@ public class SettingsActivity extends Activity {
     @OnClick(R.id.settings_option_pick_font)
     public void setupFontClick() {
         Intent intent = new Intent(this, FontPickerActivity.class);
-        startActivity(intent);
+        startActivityForResult(intent, CHOOSE_FONT_REQUEST_CODE);
 //        final AlertDialog.Builder alert = new AlertDialog.Builder(SettingsActivity.this);
 //        alert.setTitle("Select you Quote Font");
 //        LinearLayout layout = new LinearLayout(SettingsActivity.this);
@@ -179,43 +181,6 @@ public class SettingsActivity extends Activity {
 //        });
     }
 
-    @OnClick(R.id.settings_option_pick_text_size)
-    public void setupTextSizeClick() {
-        showNumberPicker();
-    }
-
-    public void showNumberPicker() {
-        DisplayMetrics dm = new DisplayMetrics();
-        this.getWindowManager().getDefaultDisplay().getMetrics(dm);
-
-        final int maxFontSize = UserFontSize.getMaxFontSize(dm.widthPixels,
-                dm.heightPixels, this.getApplicationContext());
-
-        final MaterialNumberPicker numberPicker = new MaterialNumberPicker.Builder(this)
-                .minValue(50)
-                .maxValue(maxFontSize)
-                .defaultValue(18)
-                .backgroundColor(Color.WHITE)
-                .separatorColor(Color.TRANSPARENT)
-                .textColor(Color.BLACK)
-                .textSize(20)
-                .enableFocusability(false)
-                .wrapSelectorWheel(true)
-                .build();
-        new AlertDialog.Builder(this)
-                .setTitle("Pick a Text Size")
-                .setView(numberPicker)
-                .setPositiveButton(getString(android.R.string.ok), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        int fontSize = numberPicker.getValue();
-                        UserPreferencesTableInterface.writeTextSizeAndRefreshWallpaper(fontSize, SettingsActivity.this);
-                    }
-                })
-                .show();
-
-    }
-
     @OnClick(R.id.settings_option_pick_refresh)
     public void setupTimingClick() {
         Intent intent = new Intent(this, RefreshIntervalPickerActivity.class);
@@ -253,6 +218,15 @@ public class SettingsActivity extends Activity {
             long result = data.getLongExtra(RefreshIntervalPickerActivity.TIME_PICKED_EXTRA, -1);
             if(result != -1) {
                 UserPreferencesTableInterface.writeRefreshIntervalAndRefreshWallpaper(result, this);
+            }
+        }
+        else if(requestCode == CHOOSE_FONT_REQUEST_CODE && resultCode == RESULT_OK){
+            FontPickerResult result = (FontPickerResult) data.getSerializableExtra(FontPickerActivity.FONT_PICKED_EXTRA);
+            if(result != null) {
+                UserPreferencesTableInterface.writeTextFont(result.getFont());
+                UserPreferencesTableInterface.writeTextSize(result.getSize());
+                UserPreferencesTableInterface.writeTextStyle(result.getStyle());
+                SchedulingManager.settingChanged(this);
             }
         }
     }
