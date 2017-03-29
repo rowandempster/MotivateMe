@@ -2,11 +2,9 @@ package enghack.motivateme.Activities;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.View;
-import android.widget.Button;
 
 import com.github.shchurov.horizontalwheelview.HorizontalWheelView;
 
@@ -17,8 +15,6 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import enghack.motivateme.CustomViews.LabeledButton;
-import enghack.motivateme.CustomViews.MotivateMeToggleButton;
 import enghack.motivateme.CustomViews.refresh_interval_activity.RefreshIntervalPickerLabeledButton;
 import enghack.motivateme.Database.UserPreferencesTable.UserPreferencesTableInterface;
 import enghack.motivateme.R;

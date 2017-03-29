@@ -20,8 +20,8 @@ import twitter4j.TwitterException;
  * Created by rowandempster on 2/22/17.
  */
 
-public class PullTweetsTask extends AsyncTask<PullTweetsParams, Void, Void> {
-    private static PullTweetsTask _currTask;
+public class PullTweetsAndPutInDbTask extends AsyncTask<PullTweetsParams, Void, Void> {
+    private static PullTweetsAndPutInDbTask _currTask;
     private PullTweetsCallback _callback;
 
     public static void pullTweetsIfNeeded(SQLiteDatabase db, PullTweetsParams toPull) {
@@ -34,23 +34,23 @@ public class PullTweetsTask extends AsyncTask<PullTweetsParams, Void, Void> {
 
     public static void pullTweetsNotSafe(PullTweetsParams toPull) {
         if (_currTask == null) {
-            _currTask = new PullTweetsTask();
+            _currTask = new PullTweetsAndPutInDbTask();
             _currTask.execute(toPull);
         }
     }
 
     public static void pullTweetsNotSafe(PullTweetsParams toPull, PullTweetsCallback callback) {
         if (_currTask == null) {
-            _currTask = new PullTweetsTask(callback);
+            _currTask = new PullTweetsAndPutInDbTask(callback);
             _currTask.execute(toPull);
         }
     }
 
-    public PullTweetsTask(PullTweetsCallback callback){
+    public PullTweetsAndPutInDbTask(PullTweetsCallback callback){
         _callback = callback;
     }
 
-    public PullTweetsTask(){
+    public PullTweetsAndPutInDbTask(){
         _callback = new PullTweetsCallback() {
             @Override
             public void start() {
