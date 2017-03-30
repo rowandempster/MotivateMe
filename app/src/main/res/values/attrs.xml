@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="SettingOption">
+        <attr name="label" format="string" />
+        <attr name="settingIcon" format="integer" />
+    </declare-styleable>
+
+    <declare-styleable name="MaterialDesignTextView">
+        <attr name="roboto_font" format="enum">
+            <enum name="Black" value="0" />
+            <enum name="BlackItalic" value="1" />
+            <enum name="Bold" value="2" />
+            <enum name="BoldItalic" value="3" />
+            <enum name="Italic" value="4" />
+            <enum name="Light" value="5" />
+            <enum name="LightItalic" value="6" />
+            <enum name="Medium" value="7" />
+            <enum name="MediumItalic" value="8" />
+            <enum name="Regular" value="9" />
+            <enum name="Thin" value="10" />
+            <enum name="ThinItalic" value="11" />
+            <enum name="CondensedBold" value="12" />
+            <enum name="CondensedBoldItalic" value="13" />
+            <enum name="CondensedItalic" value="14" />
+            <enum name="CondensedLight" value="15" />
+            <enum name="CondensedLightItalic" value="16" />
+            <enum name="CondensedRegular" value="17" />
+        </attr>
+    </declare-styleable>
+
+    <declare-styleable name="CircularSeekBar">
+        <attr name="progress" format="integer"/>
+        <attr name="max" format="integer"/>
+        <attr name="move_outside_circle" format="boolean"/>
+        <attr name="maintain_equal_circle" format="boolean"/>
+        <attr name="use_custom_radii" format="boolean"/>
+        <attr name="lock_enabled" format="boolean"/>
+        <attr name="circle_x_radius" format="dimension" />
+        <attr name="circle_y_radius" format="dimension" />
+        <attr name="circle_stroke_width" format="dimension" />
+        <attr name="pointer_radius" format="dimension" />
+        <attr name="pointer_halo_width" format="dimension" />
+        <attr name="pointer_halo_border_width" format="dimension"/>
+        <attr name="circle_color" format="color"/>
+        <attr name="circle_progress_color" format="color"/>
+        <attr name="pointer_color" format="color"/>
+        <attr name="pointer_halo_color" format="color"/>
+        <attr name="pointer_halo_color_ontouch" format="color"/>
+        <attr name="pointer_alpha_ontouch" format="integer"/>
+        <attr name="start_angle" format="float"/>
+        <attr name="end_angle" format="float"/>
+        <attr name="circle_fill" format="color"/>
+    </declare-styleable>
+
+    <declare-styleable name="LabeledButton">
+        <attr name="label_text" format="string"/>
+        <attr name="button_text" format="string"/>
+    </declare-styleable>
+
+</resources>

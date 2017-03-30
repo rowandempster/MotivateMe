@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorPrimaryLight"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="@drawable/primary_light_border_bottom_only"
+        android:orientation="vertical"
+        android:paddingBottom="10dp">
+
+        <enghack.motivateme.CustomViews.MaterialDesignTextView
+            android:id="@+id/font_picker_instructions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:gravity="center"
+            android:text="Choose your font!"
+            android:textSize="25sp"
+            app:roboto_font="Light" />
+
+        <android.support.v4.view.ViewPager xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/font_picker_view_pager"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_above="@+id/font_indicator"
+            android:layout_below="@id/font_picker_instructions" />
+
+        <com.viewpagerindicator.TabPageIndicator
+            android:id="@+id/font_indicator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true" />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <enghack.motivateme.CustomViews.MaterialDesignTextView
+            android:id="@+id/pick_font_weight_instructions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:gravity="center"
+            android:text="Choose your text style!"
+            android:textSize="25sp"
+            app:roboto_font="Light" />
+
+        <android.support.constraint.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@id/pick_font_weight_instructions"
+            android:layout_weight="1"
+            android:background="@drawable/primary_light_border_bottom_only"
+            android:orientation="horizontal"
+            android:paddingBottom="10dp">
+
+            <enghack.motivateme.CustomViews.MotivateMeToggleButton
+                android:id="@+id/font_picker_bold"
+                android:layout_width="100dp"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="B"
+                android:textSize="50dp"
+                android:textStyle="bold"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toLeftOf="@+id/font_picker_normal" />
+
+            <enghack.motivateme.CustomViews.MotivateMeToggleButton
+                android:id="@+id/font_picker_normal"
+                android:layout_width="100dp"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="R"
+                android:textSize="50dp"
+                android:textStyle="normal"
+                app:layout_constraintLeft_toRightOf="@+id/font_picker_bold"
+                app:layout_constraintRight_toLeftOf="@+id/font_picker_italic" />
+
+            <enghack.motivateme.CustomViews.MotivateMeToggleButton
+                android:id="@+id/font_picker_italic"
+                android:layout_width="100dp"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="I"
+                android:textSize="50dp"
+                android:textStyle="italic"
+                app:layout_constraintLeft_toRightOf="@+id/font_picker_normal"
+                app:layout_constraintRight_toRightOf="parent" />
+
+        </android.support.constraint.ConstraintLayout>
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="@drawable/primary_light_border_bottom_only">
+
+        <enghack.motivateme.CustomViews.MaterialDesignTextView
+            android:id="@+id/pick_text_size_instructions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:gravity="center"
+            android:text="Choose your text size!"
+            android:textSize="25dp"
+            app:roboto_font="Light" />
+
+        <com.shawnlin.numberpicker.NumberPicker
+            android:id="@+id/font_picker_number_picker"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@id/pick_text_size_instructions"
+            app:np_orientation="horizontal"
+            app:np_textSize="25dp" />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="@drawable/primary_light_border_bottom_only">
+
+        <TextView
+            android:id="@+id/font_picker_preview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:text="Preview"
+            android:textSize="25dp" />
+
+    </RelativeLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.5"
+        android:orientation="vertical">
+
+        <include layout="@layout/back_or_confirm_layout" />
+
+    </LinearLayout>
+
+
+</LinearLayout>

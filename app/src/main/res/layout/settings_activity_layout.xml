@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <enghack.motivateme.CustomViews.SettingOption
+        android:id="@+id/settings_option_pick_colour"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="?attr/selectableItemBackground"
+        app:label="Choose your text colour"
+        app:settingIcon="@drawable/colour_wheel" />
+
+    <enghack.motivateme.CustomViews.SettingOption
+        android:id="@+id/settings_option_pick_background"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="?attr/selectableItemBackground"
+        app:label="Choose your background image"
+        app:settingIcon="@drawable/background_image" />
+
+    <enghack.motivateme.CustomViews.SettingOption
+        android:id="@+id/settings_option_pick_refresh"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="?attr/selectableItemBackground"
+        app:label="Choose your refresh interval"
+        app:settingIcon="@drawable/timing" />
+
+    <enghack.motivateme.CustomViews.SettingOption
+        android:id="@+id/settings_option_pick_font"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="?attr/selectableItemBackground"
+        app:label="Choose your font"
+        app:settingIcon="@drawable/fontchoice" />
+
+    <enghack.motivateme.CustomViews.SettingOption
+        android:id="@+id/settings_option_pick_category"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="?attr/selectableItemBackground"
+        app:label="Choose your quote category"
+        app:settingIcon="@drawable/categoryicon" />
+
+    <enghack.motivateme.CustomViews.SettingOption
+        android:id="@+id/settings_option_pick_new_quote"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="?attr/selectableItemBackground"
+        app:label="Get a new quote"
+        app:settingIcon="@drawable/new_quote" />
+
+</LinearLayout>
