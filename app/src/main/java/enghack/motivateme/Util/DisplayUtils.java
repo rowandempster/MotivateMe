@@ -1,5 +1,7 @@
 package enghack.motivateme.Util;
 
+import android.content.Context;
+import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.WindowManager;
 
@@ -16,6 +18,13 @@ public class DisplayUtils {
             width = temp;
         }
 
+        return new WidthAndHeight(width, height);
+    }
+
+    public static WidthAndHeight getWidthAndHeight(Context context){
+        DisplayMetrics metrics = context.getResources().getDisplayMetrics();
+        int width = metrics.widthPixels;
+        int height = metrics.heightPixels;
         return new WidthAndHeight(width, height);
     }
 

@@ -20,4 +20,27 @@ public class BitmapUtils {
         InputStream iStream = context.getContentResolver().openInputStream(imageUri);
         return BitmapFactory.decodeStream(iStream, null, options);
     }
+
+    public static int calculateSampleSize(Context context, Uri bitmap) {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        InputStream iStream = null;
+        try {
+            iStream = context.getContentResolver().openInputStream(bitmap);
+        } catch (FileNotFoundException e) {
+            return 1;
+        }
+        BitmapFactory.decodeStream(iStream, null, options);
+        int imageHeight = options.outHeight;
+        int imageWidth = options.outWidth;
+        if(imageHeight < imageWidth){
+            int temp = imageHeight;
+            imageHeight = imageWidth;
+            imageWidth = temp;
+        }
+        DisplayUtils.WidthAndHeight dimens = DisplayUtils.getWidthAndHeight(context);
+        int scaledHeight = imageHeight/dimens.height;
+        int scaledWidth = imageWidth/dimens.width;
+        return Math.min(scaledHeight, scaledWidth);
+    }
 }

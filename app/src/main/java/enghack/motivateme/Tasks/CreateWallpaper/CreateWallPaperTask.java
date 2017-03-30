@@ -1,5 +1,6 @@
 package enghack.motivateme.Tasks.CreateWallpaper;
 
+import android.app.ProgressDialog;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -15,17 +16,30 @@ import enghack.motivateme.Util.DisplayUtils;
 
 public class CreateWallPaperTask extends AsyncTask<CreateWallpaperParams, CreateWallpaperProgress, Void> {
     private CreateWallPaperTaskInterface _callback;
+    private ProgressDialog _dialog;
 
     public CreateWallPaperTask(CreateWallPaperTaskInterface callback) {
         _callback = callback;
     }
+
+    public void attachProgressDialog(ProgressDialog dialog){
+        _dialog = dialog;
+        initDialog();
+    }
+    private void initDialog() {
+        _dialog.setCancelable(false);
+        _dialog.setCanceledOnTouchOutside(false);
+        _dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        _dialog.setIndeterminate(false);
+        _dialog.setMessage("Creating your wallpaper...");
+    }
+
 
     @Override
     protected Void doInBackground(CreateWallpaperParams... wallpaperParams) {
         CreateWallpaperParams params = wallpaperParams[0];
         createWallpaper(params.getScreenWidth(), params.getScreenHeight(), params.getQuote(), params.getTextSize(),
                 params.getTextColour(), Typeface.create(params.getTextFont(), params.getTextStyle()), params.getBackground());
-
         return null;
     }
 
@@ -35,6 +49,9 @@ public class CreateWallPaperTask extends AsyncTask<CreateWallpaperParams, Create
         double progress = info[0].getProgress();
         if (progress == 0) {
             _callback.onStart((int) max);
+            if(_dialog!= null) {
+                _dialog.show();
+            }
         } else {
             _callback.onProgress(info[0]);
         }
@@ -43,6 +60,9 @@ public class CreateWallPaperTask extends AsyncTask<CreateWallpaperParams, Create
     @Override
     protected void onPostExecute(Void aVoid) {
         _callback.onFinishUiThread();
+        if(_dialog != null) {
+            _dialog.cancel();
+        }
     }
 
     private Void createWallpaper(int width, int height, String quote, int textSize, int textColor, Typeface typeface, Bitmap background) {
@@ -56,6 +76,9 @@ public class CreateWallPaperTask extends AsyncTask<CreateWallpaperParams, Create
         background = doMathAndGetBitmap(textSize, background, words, widthAndHeight, textHeight, paint);
 
         _callback.onFinishNonUiThread(background);
+        if(_dialog != null) {
+            _dialog.cancel();
+        }
 
         return null;
     }
@@ -123,21 +146,17 @@ public class CreateWallPaperTask extends AsyncTask<CreateWallpaperParams, Create
     }
 
     private Bitmap combineImages(Bitmap background, Bitmap foreground, int width, int height, int vertStart, int horizStart) {
-        Bitmap cs;
-
-        cs = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-        Canvas comboImage = new Canvas(cs);
-        comboImage.drawBitmap(background, 0, 0, null);
+        Canvas comboImage = new Canvas(background);
         comboImage.drawBitmap(foreground, horizStart, vertStart, null);
 
-        return cs;
+        return background;
     }
 
     private Bitmap textAsBitmap(String text, Paint paint) {
         float baseline = -paint.ascent(); // ascent() is negative
         int width = (int) (paint.measureText(text) + 0.5f);
         int height = (int) (baseline + paint.descent() + 0.5f);
-        Bitmap image = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+        Bitmap image = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_4444);
         Canvas canvas = new Canvas(image);
         canvas.drawText(text, 0, baseline, paint);
         return image;
