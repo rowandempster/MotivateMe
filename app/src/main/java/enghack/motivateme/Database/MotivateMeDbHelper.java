@@ -17,7 +17,7 @@ public class MotivateMeDbHelper extends SQLiteOpenHelper {
     private static MotivateMeDbHelper _instance;
     private static int _openCount;
 
-    public static final int DATABASE_VERSION = 16;
+    public static final int DATABASE_VERSION = 18;
     public static final String DATABASE_NAME = "MotivateMe.db";
 
     public static final String SQL_CREATE_USER_PREFS_TABLE =
@@ -28,6 +28,7 @@ public class MotivateMeDbHelper extends SQLiteOpenHelper {
                     UserPreferencesTableContract.COLUMN_NAME_TEXT_COLOUR + " TEXT," +
                     UserPreferencesTableContract.COLUMN_NAME_TEXT_FONT + " TEXT," +
                     UserPreferencesTableContract.COLUMN_NAME_TEXT_SIZE + " TEXT," +
+                    UserPreferencesTableContract.COLUMN_NAME_TEXT_STYLE + " TEXT," +
                     UserPreferencesTableContract.COLUMN_NAME_QUOTE_CATEGORY + " TEXT)";
 
     public static final String SQL_CREATE_USED_TWEETS_TABLE =

@@ -24,7 +24,7 @@ public class CreateWallPaperTask extends AsyncTask<CreateWallpaperParams, Create
     protected Void doInBackground(CreateWallpaperParams... wallpaperParams) {
         CreateWallpaperParams params = wallpaperParams[0];
         createWallpaper(params.getScreenWidth(), params.getScreenHeight(), params.getQuote(), params.getTextSize(),
-                params.getTextColour(), params.getTextFont(), params.getBackground());
+                params.getTextColour(), Typeface.create(params.getTextFont(), params.getTextStyle()), params.getBackground());
 
         return null;
     }

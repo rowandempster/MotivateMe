@@ -3,73 +3,54 @@ package enghack.motivateme.Activities;
 import android.Manifest;
 import android.app.Activity;
 import android.app.ProgressDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
-import android.graphics.Typeface;
 import android.os.Build;
-import android.support.annotation.ColorInt;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.DialogFragment;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.LinearLayout;
-import android.widget.TextView;
-import android.widget.Toast;
 
-import com.enrico.colorpicker.colorDialog;
 
-import java.util.ArrayList;
-
-import biz.kasual.materialnumberpicker.MaterialNumberPicker;
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
 import enghack.motivateme.BuildConfig;
-import enghack.motivateme.CustomViews.SettingOptionCustomView;
+import enghack.motivateme.CustomViews.SettingOption;
 import enghack.motivateme.Database.MotivateMeDbHelper;
 import enghack.motivateme.Database.QuotesToUseTable.QuotesToUseTableInterface;
-import enghack.motivateme.Database.UserPreferencesTable.UserPreferencesModel;
 import enghack.motivateme.Database.UserPreferencesTable.UserPreferencesTableInterface;
 import enghack.motivateme.Managers.MotivateMeWallpaperManager;
 import enghack.motivateme.Managers.SchedulingManager;
+import enghack.motivateme.Models.FontPickerResult;
 import enghack.motivateme.Models.QuoteDatabaseModel;
 import enghack.motivateme.R;
-import enghack.motivateme.Tasks.CreateWallpaper.CreateWallpaperParams;
 import enghack.motivateme.Tasks.PullTweets.PullTweetsCallback;
 import enghack.motivateme.Tasks.PullTweets.PullTweetsParams;
-import enghack.motivateme.Tasks.PullTweets.PullTweetsTask;
+import enghack.motivateme.Tasks.PullTweets.PullTweetsAndPutInDbTask;
 import enghack.motivateme.Util.Constants;
-import enghack.motivateme.Util.UserFontSize;
-import mobi.upod.timedurationpicker.TimeDurationPicker;
-import mobi.upod.timedurationpicker.TimeDurationPickerDialogFragment;
 
-public class SettingsActivity extends AppCompatActivity implements colorDialog.ColorSelectedListener {
-    LinearLayout _root;
-    SettingOptionCustomView _textColourSetting;
-    SettingOptionCustomView _backgroundImageSetting;
-    SettingOptionCustomView _timingSetting;
-    SettingOptionCustomView _textSizeSetting;
-    SettingOptionCustomView _fontSetting;
-    SettingOptionCustomView _categorySetting;
-    SettingOptionCustomView _getAQuote;
-    ArrayList<SettingOptionCustomView> _optionsList = new ArrayList();
+public class SettingsActivity extends Activity {
+    public static final int CHOOSE_BACKGROUND_REQUEST_CODE = 99;
+    public static final int CHOOSE_TEXT_COLOUR_REQUEST_CODE = 101;
+    public static final int CHOOSE_REFRESH_INTERVAL_REQUEST_CODE = 102;
+    public static final int CHOOSE_FONT_REQUEST_CODE = 103;
+    public static final int CHOOSE_CATEGORY_REQUEST_CODE = 104;
 
-    @Override
+
+    @BindView(R.id.settings_option_pick_new_quote)
+    SettingOption _getAQuoteSetting;
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         MotivateMeDbHelper.openHelper(this);
-        PullTweetsTask.pullTweetsIfNeeded(MotivateMeDbHelper.getInstance().getReadableDatabase(), new PullTweetsParams(Constants.QUOTE_CATEGORY_TWITTER_ACCOUNT_MAP.get(0), Constants.TWEETS_TO_PULL_NORMAL_AMOUNT));
+        PullTweetsAndPutInDbTask.pullTweetsIfNeeded(MotivateMeDbHelper.getInstance().getReadableDatabase(), new PullTweetsParams(Constants.QUOTE_CATEGORY_TWITTER_ACCOUNT_MAP.get(0), Constants.TWEETS_TO_PULL_NORMAL_AMOUNT));
 
-        setContentView(R.layout.activity_settings);
+        setContentView(R.layout.settings_activity_layout);
+        ButterKnife.bind(this);
         setupViews();
-        setupClicks();
         setupPermissions();
 
     }
@@ -84,59 +65,81 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
     }
 
     private void setupViews() {
-        _root = (LinearLayout) findViewById(R.id.settings_root);
-        _textColourSetting = new SettingOptionCustomView(getApplicationContext(), "Choose your text colour", R.drawable.colour_wheel);
-        _backgroundImageSetting = new SettingOptionCustomView(getApplicationContext(), "Choose your background", R.drawable.background_image);
-        _timingSetting = new SettingOptionCustomView(getApplicationContext(), "Choose your quote refresh interval", R.drawable.timing);
-        _textSizeSetting = new SettingOptionCustomView(getApplicationContext(), "Choose your text size", R.drawable.textsize);
-        _fontSetting = new SettingOptionCustomView(getApplicationContext(), "Choose your font", R.drawable.fontchoice);
-        _categorySetting = new SettingOptionCustomView(getApplicationContext(), "Choose your quote category", R.drawable.categoryicon);
-        _getAQuote = new SettingOptionCustomView(getApplicationContext(), "Get a quote!", R.drawable.categoryicon);
-        _optionsList.add(_textColourSetting);
-        _optionsList.add(_backgroundImageSetting);
-        _optionsList.add(_timingSetting);
-        _optionsList.add(_textSizeSetting);
-        _optionsList.add(_fontSetting);
-        _optionsList.add(_categorySetting);
-        if ("debug".equals(BuildConfig.BUILD_TYPE)) {
-            _optionsList.add(_getAQuote);
-        }
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, 0, 1.0f);
-        for (int i = 0; i < _optionsList.size(); i++) {
-            _optionsList.get(i).setLayoutParams(lp);
-        }
-        for (int i = 0; i < _optionsList.size(); i++) {
-            _root.addView(_optionsList.get(i));
+        if (!("debug".equals(BuildConfig.BUILD_TYPE))) {
+            _getAQuoteSetting.setVisibility(View.GONE);
         }
     }
 
-    private void setupClicks() {
-        setupTextColourClick();
-        setupBackgroundClick();
-        setupTimingClick();
-        setupTextSizeClick();
-        setupFontClick();
-        setupCategoryClick();
-        setupNextQuoteClick();
+    @OnClick(R.id.settings_option_pick_new_quote)
+    public void setupNextQuoteClick() {
+        MotivateMeWallpaperManager.updateWallPaperWithNewQuoteAndAddToUsedIfBackgroundIsSet(this);
     }
 
-    private void setupNextQuoteClick() {
-        _getAQuote.setOnClickListener(view -> {
-            QuoteDatabaseModel quote = QuotesToUseTableInterface.getAndRemoveFirstQuoteAndPullMoreIfNeeded();
-            String quoteText = quote == null ? "No more quotes :(" : quote.getText();
-            Log.d("asdf", "Top quote : " + quoteText);
-        });
+    @OnClick(R.id.settings_option_pick_category)
+    public void setupCategoryClick() {
+        Intent intent = new Intent(this, CategoryPickerActivity.class);
+        startActivityForResult(intent, CHOOSE_CATEGORY_REQUEST_CODE);
     }
 
-    private void setupCategoryClick() {
-        _categorySetting.setOnClickListener(view -> {
-            CharSequence categories[] = new String[]{"Inspirational Quotes", "Love Quotes", "Sport Quotes", "Book Quotes", "Uplifting Quotes", "Philosophy Quotes"};
+    @OnClick(R.id.settings_option_pick_font)
+    public void setupFontClick() {
+        Intent intent = new Intent(this, FontPickerActivity.class);
+        startActivityForResult(intent, CHOOSE_FONT_REQUEST_CODE);
+    }
 
-            AlertDialog.Builder builder = new AlertDialog.Builder(SettingsActivity.this);
-            builder.setTitle("Pick a Quote Category");
-            builder.setItems(categories, (dialog, categoryChosen) -> {
+    @OnClick(R.id.settings_option_pick_refresh)
+    public void setupTimingClick() {
+        Intent intent = new Intent(this, RefreshIntervalPickerActivity.class);
+        startActivityForResult(intent, CHOOSE_REFRESH_INTERVAL_REQUEST_CODE);
+    }
+
+    @OnClick(R.id.settings_option_pick_background)
+    public void setupBackgroundClick() {
+        pickImage();
+    }
+
+    public void pickImage() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("image/*");
+        startActivityForResult(intent, CHOOSE_BACKGROUND_REQUEST_CODE);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == CHOOSE_BACKGROUND_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            if (data == null) {
+                //Display an error
+                return;
+            }
+            UserPreferencesTableInterface.writeBackgroundUriAndRefreshWallpaper(data.getData().toString(), SettingsActivity.this);
+        }
+        else if(requestCode == CHOOSE_TEXT_COLOUR_REQUEST_CODE && resultCode == RESULT_OK){
+            int result = data.getIntExtra(ColourPickerActivity.COLOUR_PICKED_EXTRA, 0);
+            if(result != 0) {
+                UserPreferencesTableInterface.writeTextColourAndRefreshWallpaper(result, this);
+            }
+        }
+        else if(requestCode == CHOOSE_REFRESH_INTERVAL_REQUEST_CODE && resultCode == RESULT_OK){
+            long result = data.getLongExtra(RefreshIntervalPickerActivity.TIME_PICKED_EXTRA, -1);
+            if(result != -1) {
+                UserPreferencesTableInterface.writeRefreshIntervalAndRefreshWallpaper(result, this);
+            }
+        }
+        else if(requestCode == CHOOSE_FONT_REQUEST_CODE && resultCode == RESULT_OK){
+            FontPickerResult result = (FontPickerResult) data.getSerializableExtra(FontPickerActivity.FONT_PICKED_EXTRA);
+            if(result != null) {
+                UserPreferencesTableInterface.writeTextFont(result.getFont());
+                UserPreferencesTableInterface.writeTextSize(result.getSize());
+                UserPreferencesTableInterface.writeTextStyle(result.getStyle());
+                SchedulingManager.settingChanged(this);
+            }
+        }
+        else if(requestCode == CHOOSE_CATEGORY_REQUEST_CODE && resultCode == RESULT_OK){
+            int result = data.getIntExtra(CategoryPickerActivity.ACCOUNT_SELECTED_KEY, -1);
+            if(result != -1) {
                 SchedulingManager.stopJobs(SettingsActivity.this);
-                UserPreferencesTableInterface.writeQuoteCategory(categoryChosen);
+                UserPreferencesTableInterface.writeQuoteCategory(result);
                 QuotesToUseTableInterface.clearTable();
                 ProgressDialog gettingTweetsProgress = new ProgressDialog(SettingsActivity.this);
                 gettingTweetsProgress.setMessage("Getting your new quotes...");
@@ -153,194 +156,19 @@ public class SettingsActivity extends AppCompatActivity implements colorDialog.C
                         SchedulingManager.cancelJobsAndStart(SettingsActivity.this);
                     }
                 };
-                PullTweetsTask.pullTweetsNotSafe(new PullTweetsParams(Constants.QUOTE_CATEGORY_TWITTER_ACCOUNT_MAP.get(categoryChosen), Constants.TWEETS_TO_PULL_NORMAL_AMOUNT), callback);
-            });
-            builder.show();
-        });
-    }
-
-    private void setupFontClick() {
-        _fontSetting.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                final AlertDialog.Builder alert = new AlertDialog.Builder(SettingsActivity.this);
-                alert.setTitle("Select you Quote Font");
-                LinearLayout layout = new LinearLayout(SettingsActivity.this);
-                layout.setOrientation(LinearLayout.VERTICAL);
-
-
-                alert.setView(layout);
-                alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        // Canceled.
-                    }
-                });
-                final AlertDialog alertDialog = alert.create();
-                alertDialog.show();
-                setupFontBox(layout, "Americana Quotes", "fonts/americana.ttf", alertDialog);
-                setupFontBox(layout, "Block Quotes", "fonts/block.ttf", alertDialog);
-                setupFontBox(layout, "Serif Quotes", "fonts/serif.ttf", alertDialog);
-                setupFontBox(layout, "Dancing Quotes", "fonts/dancing.ttf", alertDialog);
-                setupFontBox(layout, "Typerwriter Quotes", "fonts/typewriter.ttf", alertDialog);
-                setupFontBox(layout, "Caviar Quotes", "fonts/caviar.ttf", alertDialog);
-
-
-            }
-        });
-    }
-
-    private void setupFontBox(LinearLayout layout, String name, final String font, final AlertDialog alertDialog) {
-        TextView tv = new TextView(SettingsActivity.this);
-        tv.setPadding(0, 50, 0, 50);
-        tv.setText(name);
-        tv.setTypeface(Typeface.createFromAsset(SettingsActivity.this.getAssets(), font));
-        tv.setTextSize(30);
-        if (font.equals("fonts/americana.ttf")) {
-            tv.setBackgroundDrawable(getDrawable(R.drawable.border));
-        } else {
-            tv.setBackgroundDrawable(getDrawable(R.drawable.border_bottom_only));
-        }
-        tv.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        tv.setGravity(Gravity.CENTER);
-        layout.addView(tv);
-        tv.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                alertDialog.dismiss();
-
-                DisplayMetrics dm = new DisplayMetrics();
-                SettingsActivity.this.getWindowManager().getDefaultDisplay().getMetrics(dm);
-
-                final int oldMaxFontSize = UserFontSize.getMaxFontSize(dm.widthPixels,
-                        dm.heightPixels, SettingsActivity.this.getApplicationContext());
-
-                UserPreferencesTableInterface.writeTextFontAndRefreshWallpaper(font, SettingsActivity.this);
-                final int maxFontSize = UserFontSize.getMaxFontSize(dm.widthPixels,
-                        dm.heightPixels, SettingsActivity.this.getApplicationContext());
-                if (oldMaxFontSize > maxFontSize) {
-                    UserPreferencesTableInterface.writeTextSizeAndRefreshWallpaper(maxFontSize, SettingsActivity.this);
-                }
-
-            }
-        });
-    }
-
-    private void setupTextSizeClick() {
-        _textSizeSetting.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                showNumberPicker();
-            }
-        });
-    }
-
-    public void showNumberPicker() {
-        DisplayMetrics dm = new DisplayMetrics();
-        this.getWindowManager().getDefaultDisplay().getMetrics(dm);
-
-        final int maxFontSize = UserFontSize.getMaxFontSize(dm.widthPixels,
-                dm.heightPixels, this.getApplicationContext());
-
-        final MaterialNumberPicker numberPicker = new MaterialNumberPicker.Builder(this)
-                .minValue(50)
-                .maxValue(maxFontSize)
-                .defaultValue(18)
-                .backgroundColor(Color.WHITE)
-                .separatorColor(Color.TRANSPARENT)
-                .textColor(Color.BLACK)
-                .textSize(20)
-                .enableFocusability(false)
-                .wrapSelectorWheel(true)
-                .build();
-        new AlertDialog.Builder(this)
-                .setTitle("Pick a Text Size")
-                .setView(numberPicker)
-                .setPositiveButton(getString(android.R.string.ok), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        int fontSize = numberPicker.getValue();
-                        UserPreferencesTableInterface.writeTextSizeAndRefreshWallpaper(fontSize, SettingsActivity.this);
-                    }
-                })
-                .show();
-
-    }
-
-    private void setupTimingClick() {
-        _timingSetting.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                new PickerDialogFragment().show(getFragmentManager(), "dialog");
-            }
-        });
-    }
-
-    private void setupBackgroundClick() {
-        _backgroundImageSetting.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                pickImage();
-            }
-        });
-    }
-
-    public void pickImage() {
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.setType("image/*");
-        startActivityForResult(intent, 99);
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 99 && resultCode == Activity.RESULT_OK) {
-            if (data == null) {
-                //Display an error
-                return;
-            }
-            UserPreferencesTableInterface.writeBackgroundUriAndRefreshWallpaper(data.getData().toString(), SettingsActivity.this);
-
-        }
-    }
-
-    private void setupTextColourClick() {
-        _textColourSetting.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                colorDialog.showColorPicker(SettingsActivity.this, 0);
-            }
-        });
-    }
-
-    @Override
-    public void onColorSelection(DialogFragment dialogFragment, @ColorInt int selectedColor) {
-        UserPreferencesTableInterface.writeTextColourAndRefreshWallpaper(selectedColor, SettingsActivity.this);
-    }
-
-
-    private class PickerDialogFragment extends TimeDurationPickerDialogFragment {
-
-        @Override
-        protected long getInitialDuration() {
-            return 24 * 60 * 60 * 1000;
-        }
-
-
-        @Override
-        protected int setTimeUnits() {
-            return TimeDurationPicker.HH_MM_SS;
-        }
-
-
-        @Override
-        public void onDurationSet(TimeDurationPicker view, long duration) {
-            if (duration > 5000) {
-                UserPreferencesTableInterface.writeRefreshInterval(duration);
-                SchedulingManager.cancelJobsAndStart(SettingsActivity.this, duration);
-            } else {
-                Toast.makeText(SettingsActivity.this, "Please enter more than 5 seconds", Toast.LENGTH_LONG).show();
+                PullTweetsAndPutInDbTask.pullTweetsNotSafe(new PullTweetsParams(Constants.QUOTE_CATEGORY_TWITTER_ACCOUNT_MAP.get(result), Constants.TWEETS_TO_PULL_NORMAL_AMOUNT), callback);
             }
         }
+    }
+
+    @OnClick(R.id.settings_option_pick_colour)
+    public void setupTextColourClick() {
+        startColourPickerActivity();
+    }
+
+    private void startColourPickerActivity() {
+        Intent intent = new Intent(this, ColourPickerActivity.class);
+        startActivityForResult(intent, CHOOSE_TEXT_COLOUR_REQUEST_CODE);
     }
 
     @Override

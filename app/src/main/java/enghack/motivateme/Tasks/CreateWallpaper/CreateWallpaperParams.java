@@ -12,11 +12,20 @@ public class CreateWallpaperParams {
     private int screenHeight;
     private String quote;
     private int textSize;
+    private int textStyle;
     private int textColour;
     private Typeface textFont;
     private Bitmap background;
 
-    public CreateWallpaperParams(int screenWidth, int screenHeight, String quote, int textSize, int textColour, Typeface textFont, Bitmap background) {
+    public int getTextStyle() {
+        return textStyle;
+    }
+
+    public void setTextStyle(int textStyle) {
+        this.textStyle = textStyle;
+    }
+
+    public CreateWallpaperParams(int screenWidth, int screenHeight, String quote, int textSize, int textColour, Typeface textFont, Bitmap background, int textStyle) {
         this.screenWidth = screenWidth;
         this.screenHeight = screenHeight;
         this.quote = quote;
@@ -24,6 +33,7 @@ public class CreateWallpaperParams {
         this.textColour = textColour;
         this.textFont = textFont;
         this.background = background;
+        this.textStyle = textStyle;
     }
 
     public int getScreenWidth() {

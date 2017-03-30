@@ -9,7 +9,7 @@ import enghack.motivateme.Database.MotivateMeDatabaseUtils;
 import enghack.motivateme.Database.UserPreferencesTable.UserPreferencesTableInterface;
 import enghack.motivateme.Models.QuoteDatabaseModel;
 import enghack.motivateme.Tasks.PullTweets.PullTweetsParams;
-import enghack.motivateme.Tasks.PullTweets.PullTweetsTask;
+import enghack.motivateme.Tasks.PullTweets.PullTweetsAndPutInDbTask;
 
 /**
  * Created by rowandempster on 2/22/17.
@@ -51,7 +51,7 @@ public class QuotesToUseTableInterface {
 
     private static void pullNewTweetsIfNeeded() {
         String accountToPull = UserPreferencesTableInterface.readQuoteCategory();
-        PullTweetsTask.pullTweetsIfNeeded(MotivateMeDbHelper.getInstance().getReadableDatabase(), new PullTweetsParams(accountToPull, Constants.TWEETS_TO_PULL_NORMAL_AMOUNT));
+        PullTweetsAndPutInDbTask.pullTweetsIfNeeded(MotivateMeDbHelper.getInstance().getReadableDatabase(), new PullTweetsParams(accountToPull, Constants.TWEETS_TO_PULL_NORMAL_AMOUNT));
     }
 
     private static void deleteFirstRow(Cursor cursor) {
