@@ -1,5 +1,6 @@
 package enghack.motivateme.Tasks.PullTweets;
 
+import android.app.ProgressDialog;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 
@@ -23,6 +24,7 @@ import twitter4j.TwitterException;
 
 public class PullTweetsAndReturnTask extends AsyncTask<PullTweetsParams, Void, List<Status>> {
     private PullTweetsToReturnCallback _callback;
+    private ProgressDialog _progressDialog;
 
     public PullTweetsAndReturnTask(PullTweetsToReturnCallback callback) {
         _callback = callback;
@@ -42,14 +44,33 @@ public class PullTweetsAndReturnTask extends AsyncTask<PullTweetsParams, Void, L
         };
     }
 
+    public void attachProgressDialog(ProgressDialog progressDialog){
+        _progressDialog = progressDialog;
+        initDialog();
+    }
+
+    private void initDialog() {
+        _progressDialog.setCancelable(false);
+        _progressDialog.setCanceledOnTouchOutside(false);
+        _progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        _progressDialog.setIndeterminate(false);
+        _progressDialog.setMessage("Getting new quotes...");
+    }
+
     @Override
     protected void onPreExecute() {
         _callback.start();
+        if(_progressDialog != null){
+            _progressDialog.show();
+        }
     }
 
     @Override
     protected void onPostExecute(List<twitter4j.Status> quotes) {
         _callback.done(quotes);
+        if(_progressDialog != null){
+            _progressDialog.cancel();
+        }
     }
 
     @Override

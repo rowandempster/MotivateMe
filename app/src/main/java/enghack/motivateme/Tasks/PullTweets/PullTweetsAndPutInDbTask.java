@@ -1,5 +1,6 @@
 package enghack.motivateme.Tasks.PullTweets;
 
+import android.app.ProgressDialog;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 
@@ -23,12 +24,11 @@ import twitter4j.TwitterException;
 public class PullTweetsAndPutInDbTask extends AsyncTask<PullTweetsParams, Void, Void> {
     private static PullTweetsAndPutInDbTask _currTask;
     private PullTweetsCallback _callback;
+    private static ProgressDialog _progressDialog;
 
     public static void pullTweetsIfNeeded(SQLiteDatabase db, PullTweetsParams toPull) {
         if (MotivateMeDatabaseUtils.isTableEmpty(db, QuotesToUseTableContract.TABLE_NAME)) {
             pullTweetsNotSafe(toPull);
-        } else {
-            MotivateMeDbHelper.closeHelper();
         }
     }
 
@@ -64,15 +64,34 @@ public class PullTweetsAndPutInDbTask extends AsyncTask<PullTweetsParams, Void, 
         };
     }
 
+    public static void attachProgressDialogToNextPull(ProgressDialog progressDialog){
+        _progressDialog = progressDialog;
+        initDialog();
+    }
+
+    private static void initDialog() {
+        _progressDialog.setCancelable(false);
+        _progressDialog.setCanceledOnTouchOutside(false);
+        _progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        _progressDialog.setIndeterminate(false);
+        _progressDialog.setMessage("Getting new quotes...");
+    }
 
     @Override
     protected void onPreExecute() {
         _callback.start();
+        if(_progressDialog != null){
+            _progressDialog.show();
+        }
     }
 
     @Override
     protected void onPostExecute(Void aVoid) {
         _callback.done();
+        if(_progressDialog != null){
+            _progressDialog.cancel();
+        }
+        _progressDialog = null;
         _currTask = null;
     }
 

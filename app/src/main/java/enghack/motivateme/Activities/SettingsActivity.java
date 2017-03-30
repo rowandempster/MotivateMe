@@ -9,7 +9,6 @@ import android.os.Build;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 
 
@@ -24,7 +23,6 @@ import enghack.motivateme.Database.UserPreferencesTable.UserPreferencesTableInte
 import enghack.motivateme.Managers.MotivateMeWallpaperManager;
 import enghack.motivateme.Managers.SchedulingManager;
 import enghack.motivateme.Models.FontPickerResult;
-import enghack.motivateme.Models.QuoteDatabaseModel;
 import enghack.motivateme.R;
 import enghack.motivateme.Tasks.PullTweets.PullTweetsCallback;
 import enghack.motivateme.Tasks.PullTweets.PullTweetsParams;
@@ -141,21 +139,18 @@ public class SettingsActivity extends Activity {
                 SchedulingManager.stopJobs(SettingsActivity.this);
                 UserPreferencesTableInterface.writeQuoteCategory(result);
                 QuotesToUseTableInterface.clearTable();
-                ProgressDialog gettingTweetsProgress = new ProgressDialog(SettingsActivity.this);
-                gettingTweetsProgress.setMessage("Getting your new quotes...");
                 PullTweetsCallback callback = new PullTweetsCallback() {
                     @Override
                     public void start() {
-                        gettingTweetsProgress.show();
                     }
 
                     @Override
                     public void done() {
-                        gettingTweetsProgress.dismiss();
                         MotivateMeWallpaperManager.updateWallPaperWithNewQuoteAndAddToUsedIfBackgroundIsSet(SettingsActivity.this);
                         SchedulingManager.cancelJobsAndStart(SettingsActivity.this);
                     }
                 };
+                PullTweetsAndPutInDbTask.attachProgressDialogToNextPull(new ProgressDialog(this));
                 PullTweetsAndPutInDbTask.pullTweetsNotSafe(new PullTweetsParams(Constants.QUOTE_CATEGORY_TWITTER_ACCOUNT_MAP.get(result), Constants.TWEETS_TO_PULL_NORMAL_AMOUNT), callback);
             }
         }

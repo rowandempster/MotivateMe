@@ -5,6 +5,7 @@ import android.app.WallpaperManager;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.support.annotation.Nullable;
@@ -24,6 +25,7 @@ import enghack.motivateme.Tasks.CreateWallpaper.CreateWallpaperProgress;
 import enghack.motivateme.Tasks.CreateWallpaper.CreateWallPaperTask;
 import enghack.motivateme.Tasks.CreateWallpaper.CreateWallpaperParams;
 import enghack.motivateme.Util.BitmapUtils;
+import enghack.motivateme.Util.DisplayUtils;
 import enghack.motivateme.Util.StringUtils;
 
 /**
@@ -31,17 +33,15 @@ import enghack.motivateme.Util.StringUtils;
  */
 
 public class MotivateMeWallpaperManager {
-    private static ProgressDialog _settingWallPaperProgressDialog;
 
     public static void refreshWallPaperWithCurrentSettingsAndCurrentQuoteIfBackgroundIsSet(final Context context) {
         UserPreferencesModel userPreferences = getUserPreferences(context);
-        if (StringUtils.isNullOrEmpty(userPreferences.getBackgroundUri())) {
-            return;
-        }
-
-        initProgressDialog(context);
+//        if (StringUtils.isNullOrEmpty(userPreferences.getBackgroundUri())) {
+//            return;
+//        }
 
         CreateWallPaperTask wallPaperTask = new CreateWallPaperTask(getWallpaperCallbackInterface(context));
+        wallPaperTask.attachProgressDialog(new ProgressDialog(context));
         wallPaperTask.execute(getWallpaperParamsFromMostRecentQuote(userPreferences, context));
 
         MotivateMeDbHelper.closeHelper();
@@ -49,13 +49,12 @@ public class MotivateMeWallpaperManager {
 
     public static void updateWallPaperWithNewQuoteAndAddToUsedIfBackgroundIsSet(final Context context) {
         UserPreferencesModel userPreferences = getUserPreferences(context);
-        if (StringUtils.isNullOrEmpty(userPreferences.getBackgroundUri())) {
-            return;
-        }
-
-        initProgressDialog(context);
+//        if (StringUtils.isNullOrEmpty(userPreferences.getBackgroundUri())) {
+//            return;
+//        }
 
         CreateWallPaperTask wallPaperTask = new CreateWallPaperTask(getWallpaperCallbackInterface(context));
+        wallPaperTask.attachProgressDialog(new ProgressDialog(context));
         wallPaperTask.execute(getWallpaperParamsFromNewQuoteAndAddQuoteToUsed(userPreferences, context));
 
         MotivateMeDbHelper.closeHelper();
@@ -80,13 +79,10 @@ public class MotivateMeWallpaperManager {
         return new CreateWallPaperTaskInterface() {
             @Override
             public void onStart(int duration) {
-                _settingWallPaperProgressDialog.show();
             }
 
             @Override
             public void onProgress(CreateWallpaperProgress progress) {
-                int percent = (int) ((progress.getProgress() / progress.getMax()) * 100);
-                _settingWallPaperProgressDialog.setProgress(percent);
             }
 
             @Override
@@ -98,7 +94,6 @@ public class MotivateMeWallpaperManager {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                _settingWallPaperProgressDialog.dismiss();
             }
 
             @Override
@@ -106,14 +101,6 @@ public class MotivateMeWallpaperManager {
 
             }
         };
-    }
-
-    private static void initProgressDialog(Context context) {
-        _settingWallPaperProgressDialog = new ProgressDialog(context);
-        _settingWallPaperProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        _settingWallPaperProgressDialog.setMessage("Updating your wallpaper...");
-        _settingWallPaperProgressDialog.setIndeterminate(false);
-        _settingWallPaperProgressDialog.setMax(100);
     }
 
     private static CreateWallpaperParams getWallpaperParamsFromMostRecentQuote(UserPreferencesModel userPreferences, Context context) {
@@ -140,14 +127,21 @@ public class MotivateMeWallpaperManager {
     }
 
     private static Bitmap getBackgroundBitmap(Context context) {
+        DisplayUtils.WidthAndHeight dimens = DisplayUtils.getWidthAndHeight(context);
+        if(StringUtils.isNullOrEmpty(UserPreferencesTableInterface.readBackgroundUri())){
+            Bitmap emptyBackground = Bitmap.createBitmap(dimens.width, dimens.height, Bitmap.Config.ARGB_8888);
+            emptyBackground.eraseColor(Color.WHITE);
+            return emptyBackground;
+        }
         Bitmap background = null;
         BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inSampleSize = 4;
+        options.inSampleSize = BitmapUtils.calculateSampleSize(context, Uri.parse(UserPreferencesTableInterface.readBackgroundUri()));
         try {
             background = BitmapUtils.decodeSampledBitmapFromUri(context, Uri.parse(UserPreferencesTableInterface.readBackgroundUri()), options);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+        background = Bitmap.createScaledBitmap(background, dimens.width, dimens.height, false);
         return background;
     }
 }
