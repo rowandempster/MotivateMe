@@ -41,8 +41,9 @@
         android:id="@+id/category_picker_view_pager"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="5"
-        android:background="@color/colorAccent"/>
+        android:layout_weight="9"/>
+
+    <include layout="@layout/back_or_confirm_layout"/>
 
 
 </LinearLayout>

@@ -33,15 +33,6 @@
         app:settingIcon="@drawable/timing" />
 
     <enghack.motivateme.CustomViews.SettingOption
-        android:id="@+id/settings_option_pick_text_size"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:background="?attr/selectableItemBackground"
-        app:label="Choose your text size"
-        app:settingIcon="@drawable/textsize" />
-
-    <enghack.motivateme.CustomViews.SettingOption
         android:id="@+id/settings_option_pick_font"
         android:layout_width="match_parent"
         android:layout_height="0dp"

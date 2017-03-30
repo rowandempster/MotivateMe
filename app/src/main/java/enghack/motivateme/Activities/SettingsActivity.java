@@ -2,6 +2,7 @@ package enghack.motivateme.Activities;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -20,10 +21,12 @@ import enghack.motivateme.CustomViews.SettingOption;
 import enghack.motivateme.Database.MotivateMeDbHelper;
 import enghack.motivateme.Database.QuotesToUseTable.QuotesToUseTableInterface;
 import enghack.motivateme.Database.UserPreferencesTable.UserPreferencesTableInterface;
+import enghack.motivateme.Managers.MotivateMeWallpaperManager;
 import enghack.motivateme.Managers.SchedulingManager;
 import enghack.motivateme.Models.FontPickerResult;
 import enghack.motivateme.Models.QuoteDatabaseModel;
 import enghack.motivateme.R;
+import enghack.motivateme.Tasks.PullTweets.PullTweetsCallback;
 import enghack.motivateme.Tasks.PullTweets.PullTweetsParams;
 import enghack.motivateme.Tasks.PullTweets.PullTweetsAndPutInDbTask;
 import enghack.motivateme.Util.Constants;
@@ -33,6 +36,8 @@ public class SettingsActivity extends Activity {
     public static final int CHOOSE_TEXT_COLOUR_REQUEST_CODE = 101;
     public static final int CHOOSE_REFRESH_INTERVAL_REQUEST_CODE = 102;
     public static final int CHOOSE_FONT_REQUEST_CODE = 103;
+    public static final int CHOOSE_CATEGORY_REQUEST_CODE = 104;
+
 
     @BindView(R.id.settings_option_pick_new_quote)
     SettingOption _getAQuoteSetting;
@@ -67,41 +72,13 @@ public class SettingsActivity extends Activity {
 
     @OnClick(R.id.settings_option_pick_new_quote)
     public void setupNextQuoteClick() {
-        QuoteDatabaseModel quote = QuotesToUseTableInterface.getAndRemoveFirstQuoteAndPullMoreIfNeeded();
-        String quoteText = quote == null ? "No more quotes :(" : quote.getText();
-        Log.d("asdf", "Top quote : " + quoteText);
+        MotivateMeWallpaperManager.updateWallPaperWithNewQuoteAndAddToUsedIfBackgroundIsSet(this);
     }
 
     @OnClick(R.id.settings_option_pick_category)
     public void setupCategoryClick() {
         Intent intent = new Intent(this, CategoryPickerActivity.class);
-        startActivity(intent);
-//        CharSequence categories[] = new String[]{"Inspirational Quotes", "Love Quotes", "Sport Quotes", "Book Quotes", "Uplifting Quotes", "Philosophy Quotes"};
-//
-//        AlertDialog.Builder builder = new AlertDialog.Builder(SettingsActivity.this);
-//        builder.setTitle("Pick a Quote Category");
-//        builder.setItems(categories, (dialog, categoryChosen) -> {
-//            SchedulingManager.stopJobs(SettingsActivity.this);
-//            UserPreferencesTableInterface.writeQuoteCategory(categoryChosen);
-//            QuotesToUseTableInterface.clearTable();
-//            ProgressDialog gettingTweetsProgress = new ProgressDialog(SettingsActivity.this);
-//            gettingTweetsProgress.setMessage("Getting your new quotes...");
-//            PullTweetsCallback callback = new PullTweetsCallback() {
-//                @Override
-//                public void start() {
-//                    gettingTweetsProgress.show();
-//                }
-//
-//                @Override
-//                public void done() {
-//                    gettingTweetsProgress.dismiss();
-//                    MotivateMeWallpaperManager.updateWallPaperWithNewQuoteAndAddToUsedIfBackgroundIsSet(SettingsActivity.this);
-//                    SchedulingManager.cancelJobsAndStart(SettingsActivity.this);
-//                }
-//            };
-//            PullTweetsAndPutInDbTask.pullTweetsNotSafe(new PullTweetsParams(Constants.QUOTE_CATEGORY_TWITTER_ACCOUNT_MAP.get(categoryChosen), Constants.TWEETS_TO_PULL_NORMAL_AMOUNT), callback);
-//        });
-//        builder.show();
+        startActivityForResult(intent, CHOOSE_CATEGORY_REQUEST_CODE);
     }
 
     @OnClick(R.id.settings_option_pick_font)
@@ -156,6 +133,30 @@ public class SettingsActivity extends Activity {
                 UserPreferencesTableInterface.writeTextSize(result.getSize());
                 UserPreferencesTableInterface.writeTextStyle(result.getStyle());
                 SchedulingManager.settingChanged(this);
+            }
+        }
+        else if(requestCode == CHOOSE_CATEGORY_REQUEST_CODE && resultCode == RESULT_OK){
+            int result = data.getIntExtra(CategoryPickerActivity.ACCOUNT_SELECTED_KEY, -1);
+            if(result != -1) {
+                SchedulingManager.stopJobs(SettingsActivity.this);
+                UserPreferencesTableInterface.writeQuoteCategory(result);
+                QuotesToUseTableInterface.clearTable();
+                ProgressDialog gettingTweetsProgress = new ProgressDialog(SettingsActivity.this);
+                gettingTweetsProgress.setMessage("Getting your new quotes...");
+                PullTweetsCallback callback = new PullTweetsCallback() {
+                    @Override
+                    public void start() {
+                        gettingTweetsProgress.show();
+                    }
+
+                    @Override
+                    public void done() {
+                        gettingTweetsProgress.dismiss();
+                        MotivateMeWallpaperManager.updateWallPaperWithNewQuoteAndAddToUsedIfBackgroundIsSet(SettingsActivity.this);
+                        SchedulingManager.cancelJobsAndStart(SettingsActivity.this);
+                    }
+                };
+                PullTweetsAndPutInDbTask.pullTweetsNotSafe(new PullTweetsParams(Constants.QUOTE_CATEGORY_TWITTER_ACCOUNT_MAP.get(result), Constants.TWEETS_TO_PULL_NORMAL_AMOUNT), callback);
             }
         }
     }

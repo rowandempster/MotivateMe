@@ -3,10 +3,14 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <TextView
+    <enghack.motivateme.CustomViews.MaterialDesignTextView
         android:id="@+id/quote_view_holder_text_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Quote"/>
+        android:textSize="20sp"
+        android:textColor="@color/primaryText"
+        android:padding="5dp"
+        android:gravity="center"
+        android:background="@drawable/primary_light_border_bottom_only"/>
 
 </LinearLayout>

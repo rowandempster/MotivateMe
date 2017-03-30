@@ -115,8 +115,4 @@ public class FontPagerAdapter extends PagerAdapter implements IconPagerAdapter {
         return view == object;
     }
 
-    @Override
-    public CharSequence getPageTitle(int position) {
-        return FontPagerEnum.values()[position].getName();
-    }
 }
