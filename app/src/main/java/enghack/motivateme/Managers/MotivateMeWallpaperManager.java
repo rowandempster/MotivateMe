@@ -60,10 +60,11 @@ public class MotivateMeWallpaperManager {
         Bitmap background = getBackgroundBitmap(context);
         QuoteDatabaseModel quote = QuotesToUseTableInterface.getAndRemoveFirstQuoteAndPullMoreIfNeeded();
         UsedTweetsTableInterface.writeNewUsedTweet(quote);
+        
         WindowManager window = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         int style = userPreferences.getTextStyle();
         MotivateMeDbHelper.closeHelper();
-        
+
         return new CreateWallpaperParams(window.getDefaultDisplay().getWidth(), window.getDefaultDisplay().getHeight(), quote.getText(), userPreferences.getTextSize(), userPreferences.getTextColour(), typeface, background, style);
     }
 
