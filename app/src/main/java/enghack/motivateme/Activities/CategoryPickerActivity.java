@@ -23,6 +23,7 @@ import enghack.motivateme.Util.Constants;
  * Created by rowandempster on 3/28/17.
  */
 
+
 public class CategoryPickerActivity extends FragmentActivity {
     public static final String ACCOUNT_SELECTED_KEY = "account_selected";
     @BindView(R.id.category_picker_option_tabs)
