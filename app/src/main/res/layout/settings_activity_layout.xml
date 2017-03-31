@@ -56,7 +56,7 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:background="?attr/selectableItemBackground"
-        app:label="Get a new quote"
+        app:label="Show a new quote"
         app:settingIcon="@drawable/new_quote" />
 
 </LinearLayout>

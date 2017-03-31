@@ -48,7 +48,6 @@ public class SettingsActivity extends Activity {
 
         setContentView(R.layout.settings_activity_layout);
         ButterKnife.bind(this);
-        setupViews();
         setupPermissions();
 
     }
@@ -59,12 +58,6 @@ public class SettingsActivity extends Activity {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
                     33);
             return;
-        }
-    }
-
-    private void setupViews() {
-        if (!("debug".equals(BuildConfig.BUILD_TYPE))) {
-            _getAQuoteSetting.setVisibility(View.GONE);
         }
     }
 

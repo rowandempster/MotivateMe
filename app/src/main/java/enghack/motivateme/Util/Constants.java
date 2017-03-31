@@ -35,7 +35,7 @@ public class Constants {
     public static final int TWEET_LENGTH = 140;
 
     //Pulling tweets
-    public static final int TWEETS_TO_PULL_NORMAL_AMOUNT = 20;
+    public static final int TWEETS_TO_PULL_NORMAL_AMOUNT = 100;
 
 
 }
