@@ -36,9 +36,6 @@ public class MotivateMeWallpaperManager {
 
     public static void refreshWallPaperWithCurrentSettingsAndCurrentQuoteIfBackgroundIsSet(final Context context) {
         UserPreferencesModel userPreferences = getUserPreferences(context);
-//        if (StringUtils.isNullOrEmpty(userPreferences.getBackgroundUri())) {
-//            return;
-//        }
 
         CreateWallPaperTask wallPaperTask = new CreateWallPaperTask(getWallpaperCallbackInterface(context));
         wallPaperTask.attachProgressDialog(new ProgressDialog(context));
@@ -49,9 +46,6 @@ public class MotivateMeWallpaperManager {
 
     public static void updateWallPaperWithNewQuoteAndAddToUsedIfBackgroundIsSet(final Context context) {
         UserPreferencesModel userPreferences = getUserPreferences(context);
-//        if (StringUtils.isNullOrEmpty(userPreferences.getBackgroundUri())) {
-//            return;
-//        }
 
         CreateWallPaperTask wallPaperTask = new CreateWallPaperTask(getWallpaperCallbackInterface(context));
         wallPaperTask.attachProgressDialog(new ProgressDialog(context));
