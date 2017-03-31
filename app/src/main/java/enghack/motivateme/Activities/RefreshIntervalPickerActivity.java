@@ -4,7 +4,9 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.view.View;
+import android.widget.LinearLayout;
 
 import com.github.shchurov.horizontalwheelview.HorizontalWheelView;
 
@@ -36,6 +38,8 @@ public class RefreshIntervalPickerActivity extends Activity {
     RefreshIntervalPickerLabeledButton _minutes;
     @BindView(R.id.refresh_time_activity_seconds)
     RefreshIntervalPickerLabeledButton _seconds;
+    @BindView(R.id.refresh_time_activity_root)
+    LinearLayout _root;
 
     private RefreshIntervalPickerLabeledButton _selectedButton;
 
@@ -53,8 +57,8 @@ public class RefreshIntervalPickerActivity extends Activity {
         _boxes = new ArrayList<>(Arrays.asList(_days, _hours, _minutes, _seconds));
         initTimeBoxes(UserPreferencesTableInterface.readRefreshInterval());
         initSeeker();
-        for(RefreshIntervalPickerLabeledButton box : _boxes){
-            if(box.getMark()>0){
+        for (RefreshIntervalPickerLabeledButton box : _boxes) {
+            if (box.getMark() > 0) {
                 setSelection(box);
                 break;
             }
@@ -78,18 +82,17 @@ public class RefreshIntervalPickerActivity extends Activity {
     }
 
     private void selectBox(RefreshIntervalPickerLabeledButton box) {
-        for(RefreshIntervalPickerLabeledButton forBox : _boxes){
-            if(!forBox.equals(box)){
+        for (RefreshIntervalPickerLabeledButton forBox : _boxes) {
+            if (!forBox.equals(box)) {
                 forBox.setPressedButton(false);
-            }
-            else{
+            } else {
                 forBox.setPressedButton(true);
             }
         }
     }
 
     private void initTimeBoxes(long userRefreshTime) {
-        for(RefreshIntervalPickerLabeledButton box : _boxes){
+        for (RefreshIntervalPickerLabeledButton box : _boxes) {
             userRefreshTime = box.initValue(userRefreshTime);
             box.setOnClickListener(view -> {
                 setSelection((RefreshIntervalPickerLabeledButton) view);
@@ -103,12 +106,12 @@ public class RefreshIntervalPickerActivity extends Activity {
     }
 
     @OnClick(R.id.back_button)
-    public void goBack(View v){
+    public void goBack(View v) {
         finish();
     }
 
     @OnClick(R.id.confirm_button)
-    public void setTime(View v){
+    public void setTime(View v) {
         Intent passBack = new Intent();
         passBack.putExtra(TIME_PICKED_EXTRA, getCurrentTime());
         setResult(RESULT_OK, passBack);
@@ -117,8 +120,8 @@ public class RefreshIntervalPickerActivity extends Activity {
 
     private long getCurrentTime() {
         long ret = -1;
-        for(RefreshIntervalPickerLabeledButton box : _boxes){
-            ret += box.getMark()*box.getMillisInTimeUnit();
+        for (RefreshIntervalPickerLabeledButton box : _boxes) {
+            ret += box.getMark() * box.getMillisInTimeUnit();
         }
         return ret + 1;
     }
@@ -133,7 +136,12 @@ public class RefreshIntervalPickerActivity extends Activity {
             if (_currProgress == newProgress) return;
             _currProgress = newProgress;
             _selectedButton.setMark(_currProgress);
-
+            if (_days.getMark() == 0 && _hours.getMark() == 0 && _minutes.getMark() < 5) {
+                Snackbar snackbar = Snackbar.make(_root, "Please choose an interval over 5 minutes", Snackbar.LENGTH_LONG);
+                snackbar.show();
+                _minutes.setMark(5);
+                _seeker.setDegreesAngle(360*(1/(double) 11));
+            }
 
         }
 
