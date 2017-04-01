@@ -2,7 +2,9 @@ package enghack.motivateme.Database.QuotesToUseTable;
 
 import android.content.ContentValues;
 import android.database.Cursor;
+import android.database.DatabaseErrorHandler;
 
+import enghack.motivateme.Database.Exceptions.EmptyTableException;
 import enghack.motivateme.Util.Constants;
 import enghack.motivateme.Database.MotivateMeDbHelper;
 import enghack.motivateme.Database.MotivateMeDatabaseUtils;
@@ -33,17 +35,19 @@ public class QuotesToUseTableInterface {
         }
     }
 
-    public static QuoteDatabaseModel getAndRemoveFirstQuoteAndPullMoreIfNeeded() {
+    public static QuoteDatabaseModel getAndRemoveFirstQuoteAndPullMoreIfNeeded() throws EmptyTableException {
         if (MotivateMeDbHelper.getInstance() != null) {
             Cursor firstRowCursor = getFirstRowCursor();
+            pullNewTweetsIfNeeded();
             if (firstRowCursor == null || !firstRowCursor.moveToFirst()) {
-                return null;
+                throw new EmptyTableException();
             }
             QuoteDatabaseModel quoteToReturn = getQuoteToReturn(firstRowCursor);
             deleteFirstRow(firstRowCursor);
             firstRowCursor.close();
-
-            pullNewTweetsIfNeeded();
+            if(quoteToReturn == null){
+                throw new EmptyTableException();
+            }
             return quoteToReturn;
         }
         return null;

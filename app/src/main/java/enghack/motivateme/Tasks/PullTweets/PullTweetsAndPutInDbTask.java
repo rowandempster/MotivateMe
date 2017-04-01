@@ -102,7 +102,6 @@ public class PullTweetsAndPutInDbTask extends AsyncTask<PullTweetsParams, Void, 
             recordLastPulledQuotes(pullTweetsParams[0].getCategory(), tweets.get(tweets.size() - 1).getId() - 1);
             tweets = filterTweets(tweets);
             putInDatabase(tweets);
-            MotivateMeDbHelper.closeHelper();
         }
         return null;
     }

@@ -9,11 +9,14 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import enghack.motivateme.Database.Exceptions.EmptyTableException;
 import enghack.motivateme.Database.MotivateMeDbHelper;
 import enghack.motivateme.Database.QuotesToUseTable.QuotesToUseTableInterface;
 import enghack.motivateme.Database.UsedTweetsTable.UsedTweetsTableInterface;
@@ -34,7 +37,8 @@ import enghack.motivateme.Util.StringUtils;
 
 public class MotivateMeWallpaperManager {
 
-    public static void refreshWallPaperWithCurrentSettingsAndCurrentQuoteIfBackgroundIsSet(final Context context) {
+    public static void refreshWallPaperWithCurrentSettingsAndCurrentQuoteIfBackgroundIsSet(final Context context) throws EmptyTableException {
+        MotivateMeDbHelper.openHelper(context);
         UserPreferencesModel userPreferences = getUserPreferences(context);
 
         CreateWallPaperTask wallPaperTask = new CreateWallPaperTask(getWallpaperCallbackInterface(context));
@@ -45,16 +49,22 @@ public class MotivateMeWallpaperManager {
     }
 
     public static void updateWallPaperWithNewQuoteAndAddToUsedIfBackgroundIsSet(final Context context) {
+        MotivateMeDbHelper.openHelper(context);
         UserPreferencesModel userPreferences = getUserPreferences(context);
 
         CreateWallPaperTask wallPaperTask = new CreateWallPaperTask(getWallpaperCallbackInterface(context));
         wallPaperTask.attachProgressDialog(new ProgressDialog(context));
-        wallPaperTask.execute(getWallpaperParamsFromNewQuoteAndAddQuoteToUsed(userPreferences, context));
+        try {
+            wallPaperTask.execute(getWallpaperParamsFromNewQuoteAndAddQuoteToUsed(userPreferences, context));
+        } catch (EmptyTableException e) {
+            Toast toast = Toast.makeText(context, "Error, please check your connection", Toast.LENGTH_LONG);
+            toast.show();
+        }
 
         MotivateMeDbHelper.closeHelper();
     }
 
-    public static CreateWallpaperParams getWallpaperParamsFromNewQuoteAndAddQuoteToUsed(UserPreferencesModel userPreferences, Context context) {
+    public static CreateWallpaperParams getWallpaperParamsFromNewQuoteAndAddQuoteToUsed(UserPreferencesModel userPreferences, Context context) throws EmptyTableException {
         MotivateMeDbHelper.openHelper(context);
         Typeface typeface = Typeface.createFromAsset(context.getAssets(), userPreferences.getTextFont());
         Bitmap background = getBackgroundBitmap(context);
@@ -97,7 +107,7 @@ public class MotivateMeWallpaperManager {
         };
     }
 
-    private static CreateWallpaperParams getWallpaperParamsFromMostRecentQuote(UserPreferencesModel userPreferences, Context context) {
+    private static CreateWallpaperParams getWallpaperParamsFromMostRecentQuote(UserPreferencesModel userPreferences, Context context) throws EmptyTableException {
         QuoteDatabaseModel quote = getQuote();
         WindowManager window = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         Typeface typeface = Typeface.createFromAsset(context.getAssets(), userPreferences.getTextFont());
@@ -106,7 +116,7 @@ public class MotivateMeWallpaperManager {
         return new CreateWallpaperParams(window.getDefaultDisplay().getWidth(), window.getDefaultDisplay().getHeight(), quote.getText(), userPreferences.getTextSize(), userPreferences.getTextColour(), typeface, background, style);
     }
 
-    private static QuoteDatabaseModel getQuote() {
+    private static QuoteDatabaseModel getQuote() throws EmptyTableException {
         QuoteDatabaseModel quote = UsedTweetsTableInterface.getMostRecentTweet();
         if (quote == null) {
             quote = QuotesToUseTableInterface.getAndRemoveFirstQuoteAndPullMoreIfNeeded();
