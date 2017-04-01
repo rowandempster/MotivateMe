@@ -8,6 +8,7 @@ import android.support.design.widget.Snackbar;
 import android.view.View;
 import android.widget.LinearLayout;
 
+import com.github.shchurov.horizontalwheelview.BuildConfig;
 import com.github.shchurov.horizontalwheelview.HorizontalWheelView;
 
 import java.util.ArrayList;
@@ -136,7 +137,7 @@ public class RefreshIntervalPickerActivity extends Activity {
             if (_currProgress == newProgress) return;
             _currProgress = newProgress;
             _selectedButton.setMark(_currProgress);
-            if (_days.getMark() == 0 && _hours.getMark() == 0 && _minutes.getMark() < 5) {
+            if (_days.getMark() == 0 && _hours.getMark() == 0 && _minutes.getMark() < 5 && !enghack.motivateme.BuildConfig.DEBUG) {
                 Snackbar snackbar = Snackbar.make(_root, "Please choose an interval over 5 minutes", Snackbar.LENGTH_LONG);
                 snackbar.show();
                 _minutes.setMark(5);

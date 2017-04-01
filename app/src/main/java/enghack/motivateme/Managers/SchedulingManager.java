@@ -4,10 +4,12 @@ import android.app.job.JobInfo;
 import android.app.job.JobScheduler;
 import android.content.ComponentName;
 import android.content.Context;
+import android.widget.Toast;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import enghack.motivateme.Activities.SettingsActivity;
+import enghack.motivateme.Database.Exceptions.EmptyTableException;
 import enghack.motivateme.Database.MotivateMeDbHelper;
 import enghack.motivateme.Database.UserPreferencesTable.UserPreferencesTableInterface;
 import enghack.motivateme.Services.UpdateWallpaperService;
@@ -24,7 +26,12 @@ public class SchedulingManager {
 
     public static void settingChanged(Context context) {
         cancelJobsAndStart(context);
-        MotivateMeWallpaperManager.refreshWallPaperWithCurrentSettingsAndCurrentQuoteIfBackgroundIsSet(context);
+        try {
+            MotivateMeWallpaperManager.refreshWallPaperWithCurrentSettingsAndCurrentQuoteIfBackgroundIsSet(context);
+        } catch (EmptyTableException e) {
+            Toast toast = Toast.makeText(context, "Error, please check your connection", Toast.LENGTH_LONG);
+            toast.show();
+        }
     }
 
     public static void cancelJobsAndStart(Context context) {

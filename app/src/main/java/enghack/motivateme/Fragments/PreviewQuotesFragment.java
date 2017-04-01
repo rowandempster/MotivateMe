@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import java.util.List;
 
@@ -86,6 +87,11 @@ public class PreviewQuotesFragment extends Fragment {
     }
 
     private void showQuotes() {
+        if(_cachedQuotes == null){
+            Toast toast = Toast.makeText(getActivity(), "Error, please check your connection", Toast.LENGTH_LONG);
+            toast.show();
+            return;
+        }
         _quotesRecyclerView.setAdapter(new CategoryQuoteListAdapter(_cachedQuotes));
         _loadingView.setVisibility(View.GONE);
         _contentView.setVisibility(View.VISIBLE);
