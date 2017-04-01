@@ -7,6 +7,7 @@ import android.os.AsyncTask;
 import java.util.ArrayList;
 import java.util.List;
 
+import enghack.motivateme.Database.Exceptions.EmptyTableException;
 import enghack.motivateme.Database.MotivateMeDatabaseUtils;
 import enghack.motivateme.Database.MotivateMeDbHelper;
 import enghack.motivateme.Database.QuotesToUseTable.QuotesToUseTableContract;
@@ -76,6 +77,9 @@ public class PullTweetsAndReturnTask extends AsyncTask<PullTweetsParams, Void, L
     @Override
     protected List<twitter4j.Status> doInBackground(PullTweetsParams... pullTweetsParams) {
         List<twitter4j.Status> tweets = getTweets(pullTweetsParams[0]);
+        if(tweets == null){
+            return null;
+        }
         tweets = filterTweets(tweets);
         return tweets;
     }

@@ -8,6 +8,7 @@ import android.support.annotation.NonNull;
 
 import java.io.IOException;
 
+import enghack.motivateme.Database.Exceptions.EmptyTableException;
 import enghack.motivateme.Database.MotivateMeDbHelper;
 import enghack.motivateme.Database.UserPreferencesTable.UserPreferencesModel;
 import enghack.motivateme.Database.UserPreferencesTable.UserPreferencesTableInterface;
@@ -30,10 +31,15 @@ public class UpdateWallpaperService extends JobService {
 
         Thread newThread = new Thread(() -> {
             UserPreferencesModel userPrefs = UserPreferencesTableInterface.readUserPreferences();
-            CreateWallpaperParams wallpaperParams = MotivateMeWallpaperManager.getWallpaperParamsFromNewQuoteAndAddQuoteToUsed(userPrefs, UpdateWallpaperService.this);
 
-            CreateWallPaperTask wallPaperTask = getCreationTask(jobParameters);
-            wallPaperTask.execute(wallpaperParams);
+            CreateWallpaperParams wallpaperParams = null;
+            try {
+                wallpaperParams = MotivateMeWallpaperManager.getWallpaperParamsFromNewQuoteAndAddQuoteToUsed(userPrefs, UpdateWallpaperService.this);
+                CreateWallPaperTask wallPaperTask = getCreationTask(jobParameters);
+                wallPaperTask.execute(wallpaperParams);
+            } catch (EmptyTableException e) {
+
+            }
         });
         newThread.start();
         return false;

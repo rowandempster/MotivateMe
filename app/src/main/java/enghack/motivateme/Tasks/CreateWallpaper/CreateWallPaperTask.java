@@ -3,6 +3,7 @@ package enghack.motivateme.Tasks.CreateWallpaper;
 import android.app.ProgressDialog;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
@@ -146,10 +147,12 @@ public class CreateWallPaperTask extends AsyncTask<CreateWallpaperParams, Create
     }
 
     private Bitmap combineImages(Bitmap background, Bitmap foreground, int width, int height, int vertStart, int horizStart) {
-        Canvas comboImage = new Canvas(background);
-        comboImage.drawBitmap(foreground, horizStart, vertStart, null);
+        Bitmap comboImage = Bitmap.createBitmap(width, height, background.getConfig());
+        Canvas comboCanvas = new Canvas(comboImage);
+        comboCanvas.drawBitmap(background, new Matrix(), null);
+        comboCanvas.drawBitmap(foreground, horizStart, vertStart, null);
 
-        return background;
+        return comboImage;
     }
 
     private Bitmap textAsBitmap(String text, Paint paint) {
