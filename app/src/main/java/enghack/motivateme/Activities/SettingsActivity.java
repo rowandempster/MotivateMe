@@ -5,12 +5,17 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.os.Bundle;
 import android.view.View;
 
+
+import com.theartofdev.edmodo.cropper.CropImage;
+import com.theartofdev.edmodo.cropper.CropImageActivity;
+import com.theartofdev.edmodo.cropper.CropImageView;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -28,6 +33,7 @@ import enghack.motivateme.Tasks.PullTweets.PullTweetsCallback;
 import enghack.motivateme.Tasks.PullTweets.PullTweetsParams;
 import enghack.motivateme.Tasks.PullTweets.PullTweetsAndPutInDbTask;
 import enghack.motivateme.Util.Constants;
+import enghack.motivateme.Util.DisplayUtils;
 
 public class SettingsActivity extends Activity {
     public static final int CHOOSE_BACKGROUND_REQUEST_CODE = 99;
@@ -103,7 +109,12 @@ public class SettingsActivity extends Activity {
                 //Display an error
                 return;
             }
-            UserPreferencesTableInterface.writeBackgroundUriAndRefreshWallpaper(data.getData().toString(), SettingsActivity.this);
+            DisplayUtils.WidthAndHeight dims = DisplayUtils.getWidthAndHeight(this);
+
+            CropImage.activity(data.getData())
+                    .setGuidelines(CropImageView.Guidelines.ON)
+                    .setAspectRatio(dims.width, dims.height)
+                    .start(this);
         }
         else if(requestCode == CHOOSE_TEXT_COLOUR_REQUEST_CODE && resultCode == RESULT_OK){
             int result = data.getIntExtra(ColourPickerActivity.COLOUR_PICKED_EXTRA, 0);
@@ -124,6 +135,16 @@ public class SettingsActivity extends Activity {
                 UserPreferencesTableInterface.writeTextSize(result.getSize());
                 UserPreferencesTableInterface.writeTextStyle(result.getStyle());
                 SchedulingManager.settingChanged(this);
+            }
+        }
+        else if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
+            CropImage.ActivityResult result = CropImage.getActivityResult(data);
+            if (resultCode == RESULT_OK) {
+                Uri resultUri = result.getUri();
+
+                UserPreferencesTableInterface.writeBackgroundUriAndRefreshWallpaper(resultUri.toString(), SettingsActivity.this);
+            } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
+                Exception error = result.getError();
             }
         }
         else if(requestCode == CHOOSE_CATEGORY_REQUEST_CODE && resultCode == RESULT_OK){
